@@ -1,5 +1,26 @@
 package backend.academy.handlers;
 
+import backend.academy.io.formatters.ADocFormatter;
+import backend.academy.io.formatters.MarkdownFormatter;
+import backend.academy.io.formatters.TextFormatter;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import lombok.SneakyThrows;
+
+@SuppressFBWarnings // suppress warnings concerned with user file paths input
 public class ArgsHandler {
     private final String[] args;
     private final List<Path> paths = new ArrayList<>();
@@ -57,6 +78,56 @@ public class ArgsHandler {
             filterField,
             filterValuePattern
         );
+    }
+
+    @SneakyThrows
+    public int getPaths(int pos) {
+        int newPos = pos + 1;
+        // loop starts from key parameters
+        for (; newPos < args.length; ++newPos) {
+            String currentArg = args[newPos];
+            // end loop if another key
+            if (isKey(currentArg)) {
+                break;
+            }
+
+            if (currentArg.matches("^(http|https|ftp|file)://.*")) {
+                urls.add(URI.create(currentArg).toURL());
+            } else {
+                // if path doesn't contain any glob patterns
+                // that mean we deal with a single file
+                if (findSpecialSymbolIndex(currentArg) == -1) {
+                    paths.add(Paths.get(currentArg));
+                } else {
+                    Path rootDir = extractRootDir(currentArg);
+                    String pattern = extractPattern(currentArg);
+                    Files.walkFileTree(rootDir, new SimpleFileVisitor<>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:"
+                                + pattern);
+                            Path relativePath = rootDir.relativize(file);
+                            if (matcher.matches(relativePath)) {
+                                paths.add(file.toAbsolutePath());
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
+            }
+        }
+        return newPos - 1; // returns pos of the last arg
+    }
+
+    public int getFromTime(int pos) {
+        int newPos = pos + 1;
+        if (newPos < args.length && !isKey(args[newPos])) {
+            from = ZonedDateTime.parse(args[newPos]);
+        } else {
+            throw new IllegalArgumentException("Excepted date after --from on argument position " + newPos);
+        }
+
+        return newPos;
     }
 
 }
