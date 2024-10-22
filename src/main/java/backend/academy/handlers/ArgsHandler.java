@@ -130,4 +130,117 @@ public class ArgsHandler {
         return newPos;
     }
 
+    public int getToTime(int pos) {
+        int newPos = pos + 1;
+        if (newPos < args.length && !isKey(args[newPos])) {
+            to = ZonedDateTime.parse(args[newPos]);
+        } else {
+            throw new IllegalArgumentException("Excepted date after --to on argument position " + newPos);
+        }
+
+        return newPos;
+    }
+
+    public int getFormat(int pos) {
+        int newPos = pos + 1;
+        if (newPos < args.length && !isKey(args[newPos])) {
+            format = switch (args[newPos]) {
+                case "markdown" -> new MarkdownFormatter();
+                case "adoc" -> new ADocFormatter();
+                default -> throw new IllegalArgumentException("Unsupported format: " + args[newPos]);
+            };
+        } else {
+            throw new IllegalArgumentException("Excepted format after --format on argument position " + newPos);
+        }
+
+        return newPos;
+    }
+
+    public int getFilterField(int pos) {
+        int newPos = pos + 1;
+        if (newPos < args.length && !isKey(args[newPos])) {
+            filterField = args[newPos];
+        } else {
+            throw new IllegalArgumentException(
+                "Excepted filter field after --filter-field on argument position " + newPos);
+        }
+
+        return newPos;
+    }
+
+    public int getFilterValuePattern(int pos) {
+        int newPos = pos + 1;
+        if (newPos < args.length && !isKey(args[newPos])) {
+            filterValuePattern = Pattern.compile(args[newPos]);
+        } else {
+            throw new IllegalArgumentException(
+                "Excepted filter value after --filter-value on argument position " + newPos);
+        }
+
+        return newPos;
+    }
+
+    private Path extractRootDir(String pathString) {
+        int specialSymbolIndex = findSpecialSymbolIndex(pathString);
+
+        if (specialSymbolIndex == -1) {
+            return Paths.get(pathString);
+        }
+
+        int separatorBeforeSpecialSymbolIndex = getSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
+
+        if (separatorBeforeSpecialSymbolIndex == -1) {
+            return Paths.get(pathString);
+        }
+
+        String editedPathString = pathString.substring(0, separatorBeforeSpecialSymbolIndex);
+        Path currentDirectory = Paths.get(".").toAbsolutePath();
+
+        return Paths.get(currentDirectory.toString(), editedPathString).normalize();
+    }
+
+    private int getSeparatorBeforeSpecialSymbolIndex(String pathString, int specialSymbolIndex) {
+        int separatorBeforeSpecialSymbolIndex = -1;
+        String separator = FileSystems.getDefault().getSeparator();
+        for (int i = specialSymbolIndex; i >= 0; --i) {
+            if (pathString.startsWith(separator, i)) {
+                separatorBeforeSpecialSymbolIndex = i;
+                break;
+            }
+        }
+        return separatorBeforeSpecialSymbolIndex;
+    }
+
+    private String extractPattern(String pathString) {
+        int specialSymbolIndex = findSpecialSymbolIndex(pathString);
+
+        if (specialSymbolIndex == -1) {
+            return pathString;
+        }
+
+        int separatorBeforeSpecialSymbolIndex = getSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
+
+        if (separatorBeforeSpecialSymbolIndex == -1) {
+            return pathString;
+        }
+
+        return pathString.substring(separatorBeforeSpecialSymbolIndex + 1);
+    }
+
+    private int findSpecialSymbolIndex(String pathString) {
+        int specialSymbolIndex = -1;
+        for (int i = 0; i != pathString.length(); ++i) {
+            char ch = pathString.charAt(i);
+            if (ch == '*' || ch == '?' || ch == '[' || ch == '{') {
+                specialSymbolIndex = i;
+                break;
+            }
+        }
+
+        return specialSymbolIndex;
+    }
+
+    private boolean isKey(String arg) {
+        return arg.matches("^--.*");
+    }
 }
