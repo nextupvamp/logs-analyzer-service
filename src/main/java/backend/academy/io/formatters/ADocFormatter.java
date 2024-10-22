@@ -13,17 +13,19 @@ public class ADocFormatter implements TextFormatter {
 
     @Override
     public String toTableHeader(String key, String value) {
-        return "";
+        return "[cols=\"1,1\"]\n"
+            + "|===\n"
+            + "|" + key + "|" + value + "\n";
     }
 
     @Override
     public String toTableRow(String key, String value) {
-        return "";
+        return "|" + key + "\n|" + value + "\n";
     }
 
     @Override
     public String getTableFooter() {
-        return "";
+        return "|===";
     }
 
     @Override
