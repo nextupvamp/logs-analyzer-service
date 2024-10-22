@@ -18,6 +18,33 @@ public class ReportCreator {
         printGeneralStatistics(logsStatistics, tf, out);
         printResourcesStatistics(logsStatistics, tf, out);
         printResourceCodesStatistics(logsStatistics, tf, out);
+        // additional statistics
+        printRequestMethodsStatistics(logsStatistics, tf, out);
+        printRequestOnDateStatistics(logsStatistics, tf, out);
+    }
+
+    private static void printRequestOnDateStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
+        out.println(tf.toHeaderLine("Requests on date", DEFAULT_HEADER_LEVEL));
+        out.println(tf.toTableHeader("Date", "Amount"));
+        logsStatistics.requestsOnDate().entrySet().stream()
+            .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+            .forEach(entry -> out.println(tf.toTableRow(entry.getKey().toString(), entry.getValue().toString())));
+        out.println(tf.getTableFooter());
+    }
+
+    private static void printRequestMethodsStatistics(
+        LogsStatistics logsStatistics,
+        TextFormatter tf,
+        PrintStream out
+    ) {
+        out.println(tf.toHeaderLine("Request Methods", DEFAULT_HEADER_LEVEL));
+        out.println(tf.toTableHeader("Method", "Amount"));
+        logsStatistics.requestMethods().entrySet().stream()
+            .sorted(Map.Entry.comparingByValue())
+            .forEach(entry -> out.println(tf.toTableRow(entry.getKey(), entry.getValue().toString())));
+        out.println(tf.getTableFooter());
+    }
+
     private static void printResourceCodesStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
         out.println(tf.toHeaderLine("Response codes", DEFAULT_HEADER_LEVEL));
         out.println(tf.toTableHeader("Code", "Amount"));
