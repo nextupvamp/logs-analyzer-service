@@ -13,12 +13,12 @@ public class MarkdownFormatter implements TextFormatter {
 
     @Override
     public String toTableHeader(String key, String value) {
-        return "";
+        return toTableRow(key, value) + "\n| --- | --- |";
     }
 
     @Override
     public String toTableRow(String key, String value) {
-        return "";
+        return "| " + key + " | " + value + " |";
     }
 
     @Override
