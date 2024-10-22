@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
@@ -53,6 +54,8 @@ public class LogsStatisticsGatherer {
 
     @SneakyThrows
     public LogsStatistics gatherStatistics() {
+        initPredicates(from, to, filterMethod, filterValueRegex);
+
         try (LogsReader logsReader = new LogsReader()) {
             List<Path> files = paths.paths();
             List<URL> urls = paths.urls();
@@ -125,6 +128,68 @@ public class LogsStatisticsGatherer {
         bytesSent.sort(Long::compareTo);
 
         return bytesSent.get((int) (bytesSent.size() * 0.95));
+    }
+
+    private Predicate<LogData> buildDateTimePredicate(ZonedDateTime from, ZonedDateTime to) {
+        return it -> {
+            boolean before = true;
+            boolean after = true;
+            if (from != null) {
+                after = !it.timeLocal().isBefore(from);
+            }
+            if (to != null) {
+                before = !it.timeLocal().isAfter(to);
+            }
+
+            return before && after;
+        };
+    }
+
+    @SuppressWarnings({"checkstyle:IllegalIdentifierName", "checkstyle:LambdaParameterName"})
+    private Predicate<LogData> buildFieldFilterPredicate(String filterField, Pattern filterValueRegex) {
+        if (filterField == null || filterValueRegex == null) {
+            return _ -> true;
+        }
+        return switch (filterField) {
+            case "address" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.remoteAddress());
+                return matcher.matches();
+            };
+            case "user" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.remoteUser());
+                return matcher.matches();
+            };
+            case "method" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.requestMethod());
+                return matcher.matches();
+            };
+            case "resource" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.requestResource());
+                return matcher.matches();
+            };
+            case "httpVersion" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.requestHttpVersion());
+                return matcher.matches();
+            };
+            case "status" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(String.valueOf(it.status()));
+                return matcher.matches();
+            };
+            case "referer" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.httpReferer());
+                return matcher.matches();
+            };
+            case "userAgent" -> it -> {
+                Matcher matcher = filterValueRegex.matcher(it.httpUserAgent());
+                return matcher.matches();
+            };
+            default -> throw new IllegalArgumentException("Unknown filter field: " + filterField);
+        };
+    }
+
+    private void initPredicates(ZonedDateTime from, ZonedDateTime to, String filterField, Pattern filterValueRegex) {
+        dateTimePredicate = buildDateTimePredicate(from, to);
+        fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValueRegex);
     }
 }
 
