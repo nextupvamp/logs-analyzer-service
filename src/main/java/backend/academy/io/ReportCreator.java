@@ -1,5 +1,11 @@
 package backend.academy.io;
 
+import backend.academy.io.formatters.TextFormatter;
+import backend.academy.log_data.LogsStatistics;
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
