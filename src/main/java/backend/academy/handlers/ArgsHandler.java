@@ -183,15 +183,14 @@ public class ArgsHandler {
     private Path extractRootDir(String pathString) {
         int specialSymbolIndex = findSpecialSymbolIndex(pathString);
 
-        Path originPath = Paths.get(pathString);
         if (specialSymbolIndex == -1) {
-            return originPath;
+            return Paths.get(pathString);
         }
 
         int separatorBeforeSpecialSymbolIndex = getSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
 
         if (separatorBeforeSpecialSymbolIndex == -1) {
-            return originPath;
+            return Paths.get(pathString);
         }
 
         String editedPathString = pathString.substring(0, separatorBeforeSpecialSymbolIndex);
