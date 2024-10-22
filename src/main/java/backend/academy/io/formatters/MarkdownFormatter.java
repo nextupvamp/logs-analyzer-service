@@ -28,6 +28,6 @@ public class MarkdownFormatter implements TextFormatter {
 
     @Override
     public String toMonospaced(String line) {
-        return "";
+        return "`" + line + "`";
     }
 }
