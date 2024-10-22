@@ -50,4 +50,12 @@ public class NginxLogsHandlerTest {
 
         assertEquals(expected, logData);
     }
+
+    @Test
+    public void testParseInvalidLogLineData() {
+        LogsHandler logsHandler = new NginxLogsHandler();
+        assertThrows(IllegalArgumentException.class, () -> logsHandler.parseLogLineData(
+            "[Fri Sep 09 10:42:29.902022 2011] [core:error] [pid 35708:tid 4328636416] [client 72.15.99.187] File does not exist: /usr/local/apache2/htdocs/favicon.ico"
+        ));
+    }
 }
