@@ -1,7 +1,7 @@
 package backend.academy.io;
 
 import backend.academy.handlers.log_handlers.LogsHandler;
-import backend.academy.log_data.LogData;
+import backend.academy.data.LogData;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.BufferedReader;
 import java.io.InputStream;

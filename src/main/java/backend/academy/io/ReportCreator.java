@@ -1,7 +1,7 @@
 package backend.academy.io;
 
 import backend.academy.io.formatters.TextFormatter;
-import backend.academy.log_data.LogsStatistics;
+import backend.academy.data.LogsStatistics;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;

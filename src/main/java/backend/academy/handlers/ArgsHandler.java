@@ -1,5 +1,7 @@
 package backend.academy.handlers;
 
+import backend.academy.data.ArgsData;
+import backend.academy.data.LogPaths;
 import backend.academy.io.formatters.ADocFormatter;
 import backend.academy.io.formatters.MarkdownFormatter;
 import backend.academy.io.formatters.TextFormatter;

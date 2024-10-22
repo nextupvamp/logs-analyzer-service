@@ -2,7 +2,7 @@ package backend.academy.handlers;
 
 import backend.academy.handlers.log_handlers.LogsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
-import backend.academy.log_data.LogData;
+import backend.academy.data.LogData;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

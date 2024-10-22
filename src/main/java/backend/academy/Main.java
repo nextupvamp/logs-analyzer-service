@@ -1,10 +1,10 @@
 package backend.academy;
 
-import backend.academy.handlers.ArgsData;
+import backend.academy.data.ArgsData;
 import backend.academy.handlers.ArgsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.io.ReportCreator;
-import backend.academy.log_data.LogsStatisticsGatherer;
+import backend.academy.handlers.log_handlers.LogsStatisticsGatherer;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;

@@ -1,6 +1,6 @@
 package backend.academy.handlers.log_handlers;
 
-import backend.academy.log_data.LogData;
+import backend.academy.data.LogData;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;

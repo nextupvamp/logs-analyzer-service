@@ -1,4 +1,4 @@
-package backend.academy.handlers;
+package backend.academy.data;
 
 import backend.academy.io.formatters.TextFormatter;
 import java.time.ZonedDateTime;

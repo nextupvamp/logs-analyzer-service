@@ -1,4 +1,4 @@
-package backend.academy.handlers;
+package backend.academy.data;
 
 import java.net.URL;
 import java.nio.file.Path;

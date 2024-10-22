@@ -1,8 +1,7 @@
-package backend.academy.io;
+package backend.academy.handlers;
 
-import backend.academy.handlers.ArgsData;
-import backend.academy.handlers.ArgsHandler;
-import backend.academy.handlers.LogPaths;
+import backend.academy.data.ArgsData;
+import backend.academy.data.LogPaths;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;

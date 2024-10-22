@@ -1,9 +1,9 @@
 package backend.academy.io;
 
 import backend.academy.handlers.ArgsHandler;
-import backend.academy.handlers.LogPaths;
+import backend.academy.data.LogPaths;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
-import backend.academy.log_data.LogData;
+import backend.academy.data.LogData;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.FileSystems;

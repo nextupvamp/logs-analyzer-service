@@ -1,4 +1,4 @@
-package backend.academy.log_data;
+package backend.academy.data;
 
 import java.time.ZonedDateTime;
 import java.util.List;

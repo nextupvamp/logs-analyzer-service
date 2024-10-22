@@ -1,8 +1,9 @@
-package backend.academy.log_data;
+package backend.academy.handlers;
 
-import backend.academy.handlers.ArgsData;
-import backend.academy.handlers.ArgsHandler;
-import backend.academy.handlers.LogPaths;
+import backend.academy.data.LogsStatistics;
+import backend.academy.data.ArgsData;
+import backend.academy.data.LogPaths;
+import backend.academy.handlers.log_handlers.LogsStatisticsGatherer;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.io.LogsReaderTest;
 import lombok.SneakyThrows;
