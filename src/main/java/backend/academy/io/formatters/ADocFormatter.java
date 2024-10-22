@@ -30,6 +30,6 @@ public class ADocFormatter implements TextFormatter {
 
     @Override
     public String toMonospaced(String line) {
-        return "";
+        return "`" + line + "`";
     }
 }
