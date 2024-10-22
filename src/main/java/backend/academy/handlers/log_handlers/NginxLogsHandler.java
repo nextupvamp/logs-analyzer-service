@@ -17,6 +17,23 @@ public class NginxLogsHandler implements LogsHandler {
 
     @Override
     public LogData parseLogLineData(String line) {
-        return null;
+        Matcher matcher = LOG_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(LOG_DATE_FORMAT, LOG_DATE_LOCALE);
+            return new LogData(
+                matcher.group("address"),
+                matcher.group("user"),
+                ZonedDateTime.parse(matcher.group("time"), dateTimeFormatter),
+                matcher.group("method"),
+                matcher.group("resource"),
+                matcher.group("http"),
+                Short.parseShort(matcher.group("status")),
+                Long.parseLong(matcher.group("bytes")),
+                matcher.group("referer"),
+                matcher.group("userAgent")
+            );
+        } else {
+            throw new IllegalArgumentException("Invalid log format: " + line);
+        }
     }
 }
