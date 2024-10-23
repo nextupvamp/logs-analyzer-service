@@ -3,11 +3,13 @@ package backend.academy.io.formatters;
 public interface TextFormatter {
     String toHeaderLine(String line, int level);
 
-    String toTableHeader(String key, String value);
+    String toTableHeader(String... columns);
 
-    String toTableRow(String key, String value);
+    String toTableRow(String... columns);
 
     String getTableFooter();
 
     String toMonospaced(String line);
+
+    String getFileFormat();
 }
