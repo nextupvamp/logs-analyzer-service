@@ -3,6 +3,7 @@ package backend.academy.io.formatters;
 public class ADocFormatter implements TextFormatter {
     public static final int MAX_HEADER_LEVEL = 6;
     public static final int MIN_HEADER_LEVEL = 1;
+    public static final String TABLE_BOUND = "|===";
 
     @Override
     public String toHeaderLine(String line, int level) {
@@ -12,20 +13,37 @@ public class ADocFormatter implements TextFormatter {
     }
 
     @Override
-    public String toTableHeader(String key, String value) {
-        return "[cols=\"1,1\"]\n"
-            + "|===\n"
-            + "|" + key + "|" + value + "\n";
+    public String toTableHeader(String... columns) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[cols=\"");
+        for (int i = 0; i != columns.length; ++i) {
+            sb.append('1');
+            if (i != columns.length - 1) {
+                sb.append(',');
+            }
+        }
+        sb.append("\"]").append(System.lineSeparator()).append(TABLE_BOUND).append(System.lineSeparator());
+
+        for (String column : columns) {
+            sb.append('|').append(column);
+        }
+        sb.append(System.lineSeparator());
+
+        return sb.toString();
     }
 
     @Override
-    public String toTableRow(String key, String value) {
-        return "|" + key + "\n|" + value + "\n";
+    public String toTableRow(String... columns) {
+        StringBuilder sb = new StringBuilder();
+        for (String column : columns) {
+            sb.append('|').append(column).append(System.lineSeparator());
+        }
+        return sb.toString();
     }
 
     @Override
     public String getTableFooter() {
-        return "|===";
+        return TABLE_BOUND;
     }
 
     @Override
