@@ -12,13 +12,23 @@ public class MarkdownFormatter implements TextFormatter {
     }
 
     @Override
-    public String toTableHeader(String key, String value) {
-        return toTableRow(key, value) + "\n| --- | --- |";
+    public String toTableHeader(String... columns) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator()).append('|');
+        for (int i = 0; i != columns.length; ++i) {
+            sb.append(" --- |");
+        }
+        return toTableRow(columns) + sb;
     }
 
     @Override
-    public String toTableRow(String key, String value) {
-        return "| " + key + " | " + value + " |";
+    public String toTableRow(String... columns) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('|');
+        for (String column : columns) {
+            sb.append(' ').append(column).append(' ').append('|');
+        }
+        return sb.toString();
     }
 
     @Override
