@@ -13,8 +13,8 @@ public class MarkdownFormatter implements TextFormatter {
 
     @Override
     public String toTableHeader(String... columns) {
-        String header = System.lineSeparator() + '|' +
-            " --- |".repeat(columns.length);
+        String header = System.lineSeparator() + '|'
+            + " --- |".repeat(columns.length);
         return toTableRow(columns) + header;
     }
 
