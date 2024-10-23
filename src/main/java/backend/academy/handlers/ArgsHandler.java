@@ -71,6 +71,9 @@ public class ArgsHandler {
                 throw new IllegalArgumentException("To date is before From date");
             }
         }
+        if (format == null) {
+            format = new MarkdownFormatter();
+        }
 
         return new ArgsData(
             new LogPaths(urls, paths),
