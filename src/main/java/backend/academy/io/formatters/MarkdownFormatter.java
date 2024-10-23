@@ -40,4 +40,9 @@ public class MarkdownFormatter implements TextFormatter {
     public String toMonospaced(String line) {
         return "`" + line + "`";
     }
+
+    @Override
+    public String getFileFormat() {
+        return ".md";
+    }
 }
