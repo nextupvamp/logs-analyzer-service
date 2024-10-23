@@ -32,4 +32,9 @@ public class ADocFormatter implements TextFormatter {
     public String toMonospaced(String line) {
         return "`" + line + "`";
     }
+
+    @Override
+    public String getFileFormat() {
+        return ".adoc";
+    }
 }
