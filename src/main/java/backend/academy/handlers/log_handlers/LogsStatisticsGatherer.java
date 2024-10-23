@@ -1,6 +1,8 @@
 package backend.academy.handlers.log_handlers;
 
+import backend.academy.data.LogData;
 import backend.academy.data.LogPaths;
+import backend.academy.data.LogsStatistics;
 import backend.academy.io.LogsReader;
 import java.net.URL;
 import java.nio.file.Path;
@@ -14,9 +16,6 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import backend.academy.data.LogData;
-import backend.academy.data.LogsStatistics;
 import lombok.SneakyThrows;
 
 public class LogsStatisticsGatherer {
