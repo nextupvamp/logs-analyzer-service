@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LogsStatisticsGathererTest {
-    public static final URL DATA_SOURCE = LogsStatisticsGathererTest.class.getClassLoader().getResource("test_logs.txt");
+    public static final URL DATA_SOURCE =
+        LogsStatisticsGathererTest.class.getClassLoader().getResource("test_logs.txt");
     public static final List<URL> URLS;
 
     static {
@@ -85,7 +86,7 @@ public class LogsStatisticsGathererTest {
     }
 
     @Test
-    public void testCount95p() {
+    public void testCompute95p() {
         List<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().collect(Collectors.toList());
         long p95 = LogsStatisticsGatherer.count95pBytesSent(list);
 
@@ -93,14 +94,14 @@ public class LogsStatisticsGathererTest {
     }
 
     @Test
-    public void testCountAverage() {
+    public void testComputeAverage() {
         List<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().toList();
 
         assertEquals(50, LogsStatisticsGatherer.countAverageBytesSent(list));
     }
 
     @Test
-    public void testCountRequests() {
+    public void testCounters() {
         String[] args = {
             "--path",
             LogsReaderTest.TEST_DIR_PATH + LogsReaderTest.SEPARATOR + "logs1.txt"
@@ -115,10 +116,37 @@ public class LogsStatisticsGathererTest {
             argsData.filterValuePattern(),
             new NginxLogsHandler()
         );
-        int requestsAmount = logsStatisticsGatherer.gatherStatistics().requestsAmount();
+        LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
 
-        assertEquals(30, requestsAmount); // there are 30 lines in logs1.txt
+        assertEquals(30, ls.requestsAmount()); // there are 30 lines in logs1.txt
+        assertEquals(30, ls.requestMethods().get("GET")); // all requests are GET
+        assertEquals(16, ls.statuses().get((short) 304)); // 16 304 statuses
+        // i've counted it by my hands
     }
 
-    // todo maybe test http methods amount
+    @Test
+    public void testFieldValueFilter() {
+        String[] args = {
+            "--path",
+            LogsReaderTest.TEST_DIR_PATH + LogsReaderTest.SEPARATOR + "logs1.txt",
+            "--filter-field",
+            "status",
+            "--filter-value",
+            "30.*"
+        };
+
+        ArgsHandler argsHandler = new ArgsHandler(args);
+        ArgsData argsData = argsHandler.handle();
+        LogsStatisticsGatherer logsStatisticsGatherer = new LogsStatisticsGatherer(
+            argsData.paths(),
+            argsData.from(),
+            argsData.to(),
+            argsData.filterField(),
+            argsData.filterValuePattern(),
+            new NginxLogsHandler()
+        );
+        LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
+
+        assertEquals(16, ls.requestsAmount()); // there are 16 30* statuses
+    }
 }
