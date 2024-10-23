@@ -1,17 +1,31 @@
 package backend.academy.io;
 
-import backend.academy.io.formatters.TextFormatter;
 import backend.academy.data.LogsStatistics;
+import backend.academy.io.formatters.TextFormatter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 @SuppressWarnings("checkstyle:MultipleStringLiterals")
 public class ReportCreator {
     public static final int DEFAULT_HEADER_LEVEL = 4;
+    public static final Properties STATUS_CODES_NAME;
+
+    static {
+        STATUS_CODES_NAME = new Properties();
+        try {
+            STATUS_CODES_NAME.load(
+                ReportCreator.class.getClassLoader().getResourceAsStream("status_codes.property")
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("status_codes.property not found", e);
+        }
+    }
 
     public static void createReport(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
         // default statistics
@@ -47,10 +61,15 @@ public class ReportCreator {
 
     private static void printResourceCodesStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
         out.println(tf.toHeaderLine("Response codes", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Code", "Amount"));
+        out.println(tf.toTableHeader("Code", "Name", "Amount"));
         logsStatistics.statuses().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-            .forEach(e -> out.println(tf.toTableRow(String.valueOf(e.getKey()), e.getValue().toString())));
+            .forEach(
+                e -> out.println(tf.toTableRow(String.valueOf(e.getKey()),
+                    STATUS_CODES_NAME.getProperty(String.valueOf(e.getKey())),
+                    e.getValue().toString()
+                ))
+            );
         out.println(tf.getTableFooter());
     }
 
