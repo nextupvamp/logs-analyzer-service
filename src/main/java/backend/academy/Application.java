@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.Properties;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
@@ -33,7 +34,11 @@ public class Application {
         );
 
         String fileFormat = argsData.format().getFileFormat();
-        Path reportFile = Paths.get("report" + Instant.now().toEpochMilli() + fileFormat);
+        Properties properties = new Properties();
+        properties.load(Application.class.getClassLoader().getResourceAsStream("application.property"));
+        Path reportFile = Paths.get(
+            properties.getProperty("report.directory.file.path") + "report" + Instant.now().toEpochMilli()
+                + fileFormat);
 
         PrintStream printStream = new PrintStream(Files.newOutputStream(reportFile), true, StandardCharsets.UTF_8);
         ReportCreator.createReport(statisticsGatherer.gatherStatistics(), argsData.format(), printStream);
