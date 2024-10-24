@@ -28,6 +28,12 @@ public class ReportCreator {
     }
 
     public static void createReport(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
+        if (logsStatistics == null
+            || (logsStatistics.paths().uris().isEmpty()
+            && logsStatistics.paths().paths().isEmpty())) {
+            throw new IllegalArgumentException("Invalid log statistics");
+        }
+
         // default statistics
         printGeneralStatistics(logsStatistics, tf, out);
         printResourcesStatistics(logsStatistics, tf, out);
