@@ -88,7 +88,8 @@ public class ArgsHandler {
     }
 
     /**
-     * Iterates through paths until meet another key or the end.
+     * Iterates through paths until meet another key or the end
+     * and adds them into collection.
      *
      * @param pos position of <code>--path</code> key
      * @return position of the last resolved path
