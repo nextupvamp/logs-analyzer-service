@@ -1,10 +1,10 @@
 package backend.academy.handlers.log_handlers;
 
 import backend.academy.data.LogData;
-import backend.academy.data.LogPaths;
 import backend.academy.data.LogsStatistics;
+import backend.academy.data.PathsData;
 import backend.academy.io.LogsReader;
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -19,7 +19,8 @@ import java.util.stream.Stream;
 import lombok.SneakyThrows;
 
 public class LogsStatisticsGatherer {
-    private final List<String> readPaths = new ArrayList<>();
+    private final List<Path> readPaths = new ArrayList<>();
+    private final List<URI> readUris = new ArrayList<>();
     private final List<Long> bytesSent = new ArrayList<>();
     private final Map<String, Integer> remoteAddresses = new HashMap<>();
     private final Map<String, Integer> remoteUsers = new HashMap<>();
@@ -29,7 +30,7 @@ public class LogsStatisticsGatherer {
     private final AtomicInteger requestsAmount = new AtomicInteger(0);
     private final ZonedDateTime from;
     private final ZonedDateTime to;
-    private final LogPaths paths;
+    private final PathsData paths;
     private final LogsHandler logsHandler;
     private final String filterMethod;
     private final Pattern filterValueRegex;
@@ -38,7 +39,7 @@ public class LogsStatisticsGatherer {
     private Predicate<LogData> fieldFilterPredicate;
 
     public LogsStatisticsGatherer(
-        LogPaths paths,
+        PathsData paths,
         final ZonedDateTime from,
         final ZonedDateTime to,
         String filterMethod,
@@ -59,29 +60,29 @@ public class LogsStatisticsGatherer {
 
         try (LogsReader logsReader = new LogsReader()) {
             List<Path> files = paths.paths();
-            List<URL> urls = paths.urls();
+            List<URI> uris = paths.uris();
 
             if (files != null) {
                 for (Path path : files) {
                     Path fileName = path.getFileName();
                     if (fileName != null) {
-                        readPaths.add(fileName.toString());
+                        readPaths.add(fileName);
                     }
 
                     gatherData(logsReader.readFromFileAsStream(path, logsHandler));
                 }
             }
 
-            if (urls != null) {
-                for (URL url : urls) {
-                    readPaths.add(url.getFile());
-                    gatherData(logsReader.readFromUrlAsStream(url, logsHandler));
+            if (uris != null) {
+                for (URI uri : uris) {
+                    readUris.add(uri);
+                    gatherData(logsReader.readFromUriAsStream(uri, logsHandler));
                 }
             }
         }
 
         return new LogsStatistics(
-            readPaths,
+            new PathsData(readUris, readPaths),
             remoteAddresses,
             remoteUsers,
             from,

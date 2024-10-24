@@ -1,40 +1,48 @@
 package backend.academy.handlers;
 
-import backend.academy.data.LogsStatistics;
 import backend.academy.data.ArgsData;
-import backend.academy.data.LogPaths;
+import backend.academy.data.LogsStatistics;
+import backend.academy.data.PathsData;
 import backend.academy.handlers.log_handlers.LogsStatisticsGatherer;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.io.LogsReaderTest;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LogsStatisticsGathererTest {
-    public static final URL DATA_SOURCE =
-        LogsStatisticsGathererTest.class.getClassLoader().getResource("test_logs.txt");
-    public static final List<URL> URLS;
+    public static final Path DATA_SOURCE;
 
     static {
-        assert DATA_SOURCE != null;
-        URLS = List.of(DATA_SOURCE);
+        try {
+            DATA_SOURCE =
+                Path.of(Objects.requireNonNull(
+                    LogsStatisticsGathererTest.class.getClassLoader().getResource("test_logs.txt")).toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    public static final List<Path> PATHS = List.of(DATA_SOURCE);
 
     @Test
     public void testFromToDate() {
         ZonedDateTime from = ZonedDateTime.parse("2015-05-17T08:05:00Z");
         ZonedDateTime to = ZonedDateTime.parse("2015-05-17T08:05:30Z");
-        LogPaths logPaths = new LogPaths(URLS, null);
+        PathsData logPaths = new PathsData(null, PATHS);
         LogsStatisticsGatherer logsStatisticsGatherer =
             new LogsStatisticsGatherer(logPaths, from, to, null, null, new NginxLogsHandler());
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
@@ -47,7 +55,7 @@ public class LogsStatisticsGathererTest {
     @Test
     public void testFromDate() {
         ZonedDateTime from = ZonedDateTime.parse("2015-05-17T08:05:00Z");
-        LogPaths logPaths = new LogPaths(URLS, null);
+        PathsData logPaths = new PathsData(null, PATHS);
         LogsStatisticsGatherer logsStatisticsGatherer =
             new LogsStatisticsGatherer(logPaths, from, null, null, null, new NginxLogsHandler());
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
@@ -60,7 +68,7 @@ public class LogsStatisticsGathererTest {
     @Test
     public void testToDate() {
         ZonedDateTime to = ZonedDateTime.parse("2015-05-17T08:05:30Z");
-        LogPaths logPaths = new LogPaths(URLS, null);
+        PathsData logPaths = new PathsData(null, PATHS);
         LogsStatisticsGatherer logsStatisticsGatherer =
             new LogsStatisticsGatherer(logPaths, null, to, null, null, new NginxLogsHandler());
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
@@ -73,8 +81,8 @@ public class LogsStatisticsGathererTest {
     @Test
     @SneakyThrows
     public void testNoDate() {
-        LogPaths logPaths = new LogPaths(URLS, null);
-        InputStream is = logPaths.urls().getFirst().openStream();
+        PathsData logPaths = new PathsData(null, PATHS);
+        InputStream is = Files.newInputStream(logPaths.paths().getFirst());
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
         long lines = bufferedReader.lines().count();
 

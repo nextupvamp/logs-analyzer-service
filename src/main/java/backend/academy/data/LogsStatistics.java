@@ -1,12 +1,11 @@
 package backend.academy.data;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("checkstyle:RecordComponentNumber")
 public record LogsStatistics(
-    List<String> paths,
+    PathsData paths,
     Map<String, Integer> remoteAddresses,
     Map<String, Integer> remoteUsers,
     ZonedDateTime from,

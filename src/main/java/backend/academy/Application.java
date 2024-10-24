@@ -19,7 +19,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Application {
     @SneakyThrows
-    @SuppressFBWarnings // suppress warnings concerned with file/url user input
+    @SuppressFBWarnings // suppress warnings concerned with file user input
     public static void main(String[] args) {
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();

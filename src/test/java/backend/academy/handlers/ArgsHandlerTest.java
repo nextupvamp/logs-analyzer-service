@@ -1,10 +1,8 @@
 package backend.academy.handlers;
 
 import backend.academy.data.ArgsData;
-import backend.academy.data.LogPaths;
-import java.net.MalformedURLException;
+import backend.academy.data.PathsData;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -37,7 +35,7 @@ public class ArgsHandlerTest {
             "--format",
             "adoc"
         };
-        List<URL> correctUrls = Stream.of(
+        List<URI> correctUris = Stream.of(
             "http://example.com",
             "https://example.com",
             "ftp://example.com",
@@ -46,15 +44,9 @@ public class ArgsHandlerTest {
             "https://example.com/resource?query=param",
             "http://example.com/path#section",
             "https://example.com/path?name=value&other=param#fragment"
-        ).map(URI::create).map(uri -> {
-            try {
-                return uri.toURL();
-            } catch (MalformedURLException e) {
-                throw new RuntimeException(e);
-            }
-        }).toList();
-        LogPaths paths = new ArgsHandler(args).handle().paths();
-        assertEquals(correctUrls, paths.urls());
+        ).map(URI::create).toList();
+        PathsData paths = new ArgsHandler(args).handle().paths();
+        assertEquals(correctUris, paths.uris());
         assertTrue(paths.paths().isEmpty());
     }
 
@@ -90,9 +82,9 @@ public class ArgsHandlerTest {
             "../file.txt",
             "subfolder/file.txt"
         ).map(Path::of).toList();
-        LogPaths paths = new ArgsHandler(args).handle().paths();
+        PathsData paths = new ArgsHandler(args).handle().paths();
         assertEquals(correctPaths, paths.paths());
-        assertTrue(paths.urls().isEmpty());
+        assertTrue(paths.uris().isEmpty());
     }
 
     @ParameterizedTest

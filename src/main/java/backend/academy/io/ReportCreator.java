@@ -4,10 +4,13 @@ import backend.academy.data.LogsStatistics;
 import backend.academy.io.formatters.TextFormatter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -92,12 +95,13 @@ public class ReportCreator {
         out.println(tf.toHeaderLine("General information", DEFAULT_HEADER_LEVEL));
         out.println(tf.toTableHeader("Metric", "Value"));
 
-        List<String> paths = logsStatistics.paths();
-        if (paths != null && !paths.isEmpty()) {
-            out.println(tf.toTableRow("Files", tf.toMonospaced(paths.getFirst())));
-            for (int i = 1; i < paths.size(); i++) {
-                out.println(tf.toTableRow("     ", tf.toMonospaced(paths.get(i))));
-            }
+        Stream<String> urisStream = logsStatistics.paths().uris().stream().map(URI::toString);
+        Stream<String> pathsStream = logsStatistics.paths().paths().stream().map(Path::toString);
+        List<String> pathsList = Stream.concat(urisStream, pathsStream).toList();
+
+        out.println(tf.toTableRow("Files", tf.toMonospaced(pathsList.getFirst())));
+        for (int i = 1; i < pathsList.size(); i++) {
+            out.println(tf.toTableRow("     ", tf.toMonospaced(pathsList.get(i))));
         }
 
         out.println(tf.toTableRow("Start date",

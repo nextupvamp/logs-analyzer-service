@@ -1,13 +1,12 @@
 package backend.academy.handlers;
 
 import backend.academy.data.ArgsData;
-import backend.academy.data.LogPaths;
+import backend.academy.data.PathsData;
 import backend.academy.io.formatters.ADocFormatter;
 import backend.academy.io.formatters.MarkdownFormatter;
 import backend.academy.io.formatters.TextFormatter;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -26,7 +25,7 @@ import lombok.SneakyThrows;
 public class ArgsHandler {
     private final String[] args;
     private final List<Path> paths = new ArrayList<>();
-    private final List<URL> urls = new ArrayList<>();
+    private final List<URI> uris = new ArrayList<>();
     private ZonedDateTime from;
     private ZonedDateTime to;
     private TextFormatter format;
@@ -56,7 +55,7 @@ public class ArgsHandler {
                 throw new IllegalArgumentException("Excepted key on argument position " + i);
             }
         }
-        if (paths.isEmpty() && urls.isEmpty()) {
+        if (paths.isEmpty() && uris.isEmpty()) {
             throw new IllegalArgumentException("Missing paths");
         }
         if (filterField != null && filterValuePattern == null) {
@@ -78,7 +77,7 @@ public class ArgsHandler {
         }
 
         return new ArgsData(
-            new LogPaths(urls, paths),
+            new PathsData(uris, paths),
             from,
             to,
             format,
@@ -106,7 +105,7 @@ public class ArgsHandler {
             }
 
             if (currentArg.matches("^(http|https|ftp|file)://.*")) {
-                urls.add(URI.create(currentArg).toURL());
+                uris.add(URI.create(currentArg));
             } else {
                 // if path doesn't contain any glob patterns
                 // that mean we deal with a single file
@@ -280,6 +279,7 @@ public class ArgsHandler {
      * Extracts glob pattern from filepath. The method
      * finds the first file with any pattern symbols
      * and truncates everything before it in the path.
+     *
      * @param pathString file path
      * @return glob file pattern
      */
@@ -302,6 +302,7 @@ public class ArgsHandler {
     /**
      * Finds an index of the first glob pattern
      * symbol.
+     *
      * @param pathString file path
      * @return index of the first glob pattern symbol
      */

@@ -5,7 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.regex.Pattern;
 
 public record ArgsData(
-    LogPaths paths,
+    PathsData paths,
     ZonedDateTime from,
     ZonedDateTime to,
     TextFormatter format,

@@ -1,11 +1,10 @@
 package backend.academy.io;
 
 import backend.academy.data.LogData;
-import backend.academy.data.LogPaths;
+import backend.academy.data.PathsData;
 import backend.academy.handlers.ArgsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,14 +18,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LogsReaderTest {
     public static final Path TEST_DIR_PATH = Paths.get("src", "test", "resources", "test_dir");
-    public static final URL TEST_REMOTE_URL;
+    public static final URI TEST_REMOTE_URI;
     public static final String SEPARATOR = FileSystems.getDefault().getSeparator();
 
     static {
         try {
-            TEST_REMOTE_URL =
+            TEST_REMOTE_URI =
                 new URI(
-                    "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs").toURL();
+                    "https://raw.githubusercontent.com/elastic/examples/master/Common%20Data%20Formats/nginx_logs/nginx_logs");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -49,7 +48,7 @@ public class LogsReaderTest {
     // test will fall if no Internet connection
     public void testUrlPathRead() {
         LogsReader logsReader = new LogsReader();
-        Stream<LogData> stream = logsReader.readFromUrlAsStream(TEST_REMOTE_URL, new NginxLogsHandler());
+        Stream<LogData> stream = logsReader.readFromUriAsStream(TEST_REMOTE_URI, new NginxLogsHandler());
 
         assertTrue(stream.findAny().isPresent());
 
@@ -65,7 +64,7 @@ public class LogsReaderTest {
             pattern
         };
         ArgsHandler argsHandler = new ArgsHandler(args);
-        LogPaths logPaths = argsHandler.handle().paths();
+        PathsData logPaths = argsHandler.handle().paths();
 
         assertEquals(2, logPaths.paths().size()); // there are 2 files in test_dir
     }
@@ -79,7 +78,7 @@ public class LogsReaderTest {
             pattern
         };
         ArgsHandler argsHandler = new ArgsHandler(args);
-        LogPaths logPaths = argsHandler.handle().paths();
+        PathsData logPaths = argsHandler.handle().paths();
 
         assertEquals(3, logPaths.paths().size()); // there are 3 files with log in resources
     }

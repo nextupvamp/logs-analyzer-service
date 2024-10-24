@@ -2,22 +2,24 @@ package backend.academy.io;
 
 import backend.academy.data.LogData;
 import backend.academy.handlers.log_handlers.LogsHandler;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 
-@SuppressFBWarnings // suppress warnings concerned with user url paths input
 public class LogsReader implements AutoCloseable {
     private InputStream inputStream;
     private InputStreamReader inputStreamReader;
     private BufferedReader bufferedReader;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @SneakyThrows
     public Stream<LogData> readFromFileAsStream(Path file, LogsHandler handler) {
@@ -28,8 +30,11 @@ public class LogsReader implements AutoCloseable {
     }
 
     @SneakyThrows
-    public Stream<LogData> readFromUrlAsStream(URL url, LogsHandler handler) {
-        inputStream = url.openStream();
+    public Stream<LogData> readFromUriAsStream(URI uri, LogsHandler handler) {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(uri)
+            .build();
+        inputStream = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
         initReaders(inputStream);
 
         return bufferedReader.lines().map(handler::parseLogLineData);
@@ -40,6 +45,7 @@ public class LogsReader implements AutoCloseable {
         inputStream.close();
         inputStreamReader.close();
         bufferedReader.close();
+        httpClient.close();
     }
 
     private void initReaders(InputStream inputStream) {
