@@ -18,6 +18,8 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Application {
+    public static final String REPORT_FILE_NAME = "report";
+
     @SneakyThrows
     @SuppressFBWarnings // suppress warnings concerned with file user input
     public static void main(String[] args) {
@@ -37,7 +39,7 @@ public class Application {
         Properties properties = new Properties();
         properties.load(Application.class.getClassLoader().getResourceAsStream("application.property"));
         Path reportFile = Paths.get(
-            properties.getProperty("report.directory.file.path") + "report" + Instant.now().toEpochMilli()
+            properties.getProperty("report.directory.file.path") + REPORT_FILE_NAME + Instant.now().toEpochMilli()
                 + fileFormat);
 
         PrintStream printStream = new PrintStream(Files.newOutputStream(reportFile), true, StandardCharsets.UTF_8);
