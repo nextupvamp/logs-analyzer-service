@@ -1,7 +1,7 @@
 package backend.academy.io;
 
 import backend.academy.data.LogData;
-import backend.academy.handlers.log_handlers.LogsHandler;
+import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,7 +22,7 @@ public class LogsReader implements AutoCloseable {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @SneakyThrows
-    public Stream<LogData> readFromFileAsStream(Path file, LogsHandler handler) {
+    public Stream<LogData> readFromFileAsStream(Path file, NginxLogsHandler handler) {
         inputStream = Files.newInputStream(file);
         initReaders(inputStream);
 
@@ -30,7 +30,7 @@ public class LogsReader implements AutoCloseable {
     }
 
     @SneakyThrows
-    public Stream<LogData> readFromUriAsStream(URI uri, LogsHandler handler) {
+    public Stream<LogData> readFromUriAsStream(URI uri, NginxLogsHandler handler) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(uri)
             .build();

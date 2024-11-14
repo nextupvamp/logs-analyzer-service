@@ -2,8 +2,8 @@ package backend.academy;
 
 import backend.academy.data.ArgsData;
 import backend.academy.handlers.ArgsHandler;
-import backend.academy.handlers.log_handlers.LogsStatisticsGatherer;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
+import backend.academy.handlers.log_handlers.NginxLogsStatisticsGatherer;
 import backend.academy.io.ReportCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.PrintStream;
@@ -26,7 +26,7 @@ public class Application {
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
 
-        LogsStatisticsGatherer statisticsGatherer = LogsStatisticsGatherer.builder()
+        NginxLogsStatisticsGatherer statisticsGatherer = NginxLogsStatisticsGatherer.builder()
             .paths(argsData.paths())
             .from(argsData.from())
             .to(argsData.to())

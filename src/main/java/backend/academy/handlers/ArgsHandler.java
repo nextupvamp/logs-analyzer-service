@@ -109,7 +109,7 @@ public class ArgsHandler {
             } else {
                 // if path doesn't contain any glob patterns
                 // that mean we deal with a single file
-                if (findSpecialSymbolIndex(currentArg) == -1) {
+                if (findFirstGlobSymbolIndex(currentArg) == -1) {
                     paths.add(Paths.get(currentArg));
                 } else {
                     Path rootDir = extractRootDir(currentArg);
@@ -132,13 +132,6 @@ public class ArgsHandler {
         return newPos - 1; // returns pos of the last arg
     }
 
-    /**
-     * Tries to parse a zoned date time right after
-     * the <code>--from</code> key.
-     *
-     * @param pos position of <code>--from</code> key
-     * @return position of parsed zoned date time
-     */
     public int getFromTime(int pos) {
         int newPos = pos + 1;
         if (newPos < args.length && !isKey(args[newPos])) {
@@ -150,13 +143,6 @@ public class ArgsHandler {
         return newPos;
     }
 
-    /**
-     * Tries to parse a zoned date time right after
-     * the <code>--to</code> key.
-     *
-     * @param pos position of <code>--to</code> key
-     * @return position of parsed zoned date time
-     */
     public int getToTime(int pos) {
         int newPos = pos + 1;
         if (newPos < args.length && !isKey(args[newPos])) {
@@ -168,13 +154,6 @@ public class ArgsHandler {
         return newPos;
     }
 
-    /**
-     * Tries to parse a format right after
-     * the <code>--format</code> key.
-     *
-     * @param pos position of <code>--format</code> key
-     * @return position of parsed format
-     */
     public int getFormat(int pos) {
         int newPos = pos + 1;
         if (newPos < args.length && !isKey(args[newPos])) {
@@ -190,13 +169,6 @@ public class ArgsHandler {
         return newPos;
     }
 
-    /**
-     * Tries to parse a filter field right after
-     * the <code>--filter-field</code> key.
-     *
-     * @param pos position of <code>--filter-field</code> key
-     * @return position of parsed filter field
-     */
     public int getFilterField(int pos) {
         int newPos = pos + 1;
         if (newPos < args.length && !isKey(args[newPos])) {
@@ -209,13 +181,6 @@ public class ArgsHandler {
         return newPos;
     }
 
-    /**
-     * Tries to parse a filter value right after
-     * the <code>--filter-value</code> key.
-     *
-     * @param pos position of <code>--filter-value</code> key
-     * @return position of parsed filter value
-     */
     public int getFilterValuePattern(int pos) {
         int newPos = pos + 1;
         if (newPos < args.length && !isKey(args[newPos])) {
@@ -228,22 +193,15 @@ public class ArgsHandler {
         return newPos;
     }
 
-    /**
-     * Finds the last file in the path without any
-     * pattern symbols and extracts path of this
-     * file from the original path <code>pathString</code>.
-     *
-     * @param pathString original path
-     * @return path of the last file without any pattern symbols
-     */
     private Path extractRootDir(String pathString) {
-        int specialSymbolIndex = findSpecialSymbolIndex(pathString);
+        int specialSymbolIndex = findFirstGlobSymbolIndex(pathString);
 
         if (specialSymbolIndex == -1) {
             return Paths.get(pathString);
         }
 
-        int separatorBeforeSpecialSymbolIndex = getSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
+        int separatorBeforeSpecialSymbolIndex =
+            getFirstSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
 
         if (separatorBeforeSpecialSymbolIndex == -1) {
             return Paths.get(pathString);
@@ -255,15 +213,7 @@ public class ArgsHandler {
         return Paths.get(currentDirectory.toString(), editedPathString).normalize();
     }
 
-    /**
-     * Finds the index of file separator before
-     * glob-pattern symbol.
-     *
-     * @param pathString         full file path
-     * @param specialSymbolIndex index of pattern symbol
-     * @return index of special pattern symbol
-     */
-    private int getSeparatorBeforeSpecialSymbolIndex(String pathString, int specialSymbolIndex) {
+    private int getFirstSeparatorBeforeSpecialSymbolIndex(String pathString, int specialSymbolIndex) {
         int separatorBeforeSpecialSymbolIndex = -1;
         String separator = FileSystems.getDefault().getSeparator();
         for (int i = specialSymbolIndex; i >= 0; --i) {
@@ -275,22 +225,15 @@ public class ArgsHandler {
         return separatorBeforeSpecialSymbolIndex;
     }
 
-    /**
-     * Extracts glob pattern from filepath. The method
-     * finds the first file with any pattern symbols
-     * and truncates everything before it in the path.
-     *
-     * @param pathString file path
-     * @return glob file pattern
-     */
     private String extractPattern(String pathString) {
-        int specialSymbolIndex = findSpecialSymbolIndex(pathString);
+        int specialSymbolIndex = findFirstGlobSymbolIndex(pathString);
 
         if (specialSymbolIndex == -1) {
             return pathString;
         }
 
-        int separatorBeforeSpecialSymbolIndex = getSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
+        int separatorBeforeSpecialSymbolIndex =
+            getFirstSeparatorBeforeSpecialSymbolIndex(pathString, specialSymbolIndex);
 
         if (separatorBeforeSpecialSymbolIndex == -1) {
             return pathString;
@@ -299,14 +242,7 @@ public class ArgsHandler {
         return pathString.substring(separatorBeforeSpecialSymbolIndex + 1);
     }
 
-    /**
-     * Finds an index of the first glob pattern
-     * symbol.
-     *
-     * @param pathString file path
-     * @return index of the first glob pattern symbol
-     */
-    private int findSpecialSymbolIndex(String pathString) {
+    private int findFirstGlobSymbolIndex(String pathString) {
         int specialSymbolIndex = -1;
         for (int i = 0; i != pathString.length(); ++i) {
             char ch = pathString.charAt(i);
@@ -319,13 +255,6 @@ public class ArgsHandler {
         return specialSymbolIndex;
     }
 
-    /**
-     * Checks if argument is the key.
-     *
-     * @param arg argument
-     * @return <code>true</code> if an argument is the key,
-     *     <code>false</code> if it isn't
-     */
     private boolean isKey(String arg) {
         return arg.matches("^--.*");
     }

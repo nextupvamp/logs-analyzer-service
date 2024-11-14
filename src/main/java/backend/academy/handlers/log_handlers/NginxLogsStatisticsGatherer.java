@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.SneakyThrows;
 
-public class LogsStatisticsGatherer {
+public class NginxLogsStatisticsGatherer {
     private final List<Path> readPaths = new ArrayList<>();
     private final List<URI> readUris = new ArrayList<>();
     private final List<Long> bytesSent = new ArrayList<>();
@@ -34,20 +34,20 @@ public class LogsStatisticsGatherer {
     private final ZonedDateTime from;
     private final ZonedDateTime to;
     private final PathsData paths;
-    private final LogsHandler logsHandler;
+    private final NginxLogsHandler logsHandler;
     private final String filterField;
     private final Pattern filterValuePattern;
     private Predicate<LogData> dateTimePredicate;
     private Predicate<LogData> fieldFilterPredicate;
 
     @Builder
-    private LogsStatisticsGatherer(
+    private NginxLogsStatisticsGatherer(
         PathsData paths,
         final ZonedDateTime from,
         final ZonedDateTime to,
         String filterField,
         Pattern filterValuePattern,
-        LogsHandler logsHandler
+        NginxLogsHandler logsHandler
     ) {
         this.from = from;
         this.to = to;
@@ -164,35 +164,35 @@ public class LogsStatisticsGatherer {
             return _ -> true;
         }
         return switch (filterField) {
-            case "address" -> it -> {
+            case NginxLogsHandler.REMOTE_ADDRESS_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.remoteAddress());
                 return matcher.matches();
             };
-            case "user" -> it -> {
+            case NginxLogsHandler.USER_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.remoteUser());
                 return matcher.matches();
             };
-            case "method" -> it -> {
+            case NginxLogsHandler.METHOD_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.requestMethod());
                 return matcher.matches();
             };
-            case "resource" -> it -> {
+            case NginxLogsHandler.RESOURCE_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.requestResource());
                 return matcher.matches();
             };
-            case "httpVersion" -> it -> {
+            case NginxLogsHandler.HTTP_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.requestHttpVersion());
                 return matcher.matches();
             };
-            case "status" -> it -> {
+            case NginxLogsHandler.STATUS_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(String.valueOf(it.status()));
                 return matcher.matches();
             };
-            case "referer" -> it -> {
+            case NginxLogsHandler.REFERER_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.httpReferer());
                 return matcher.matches();
             };
-            case "userAgent" -> it -> {
+            case NginxLogsHandler.USER_AGENT_GROUP -> it -> {
                 Matcher matcher = filterValueRegex.matcher(it.httpUserAgent());
                 return matcher.matches();
             };

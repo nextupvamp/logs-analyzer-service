@@ -3,8 +3,8 @@ package backend.academy.io;
 import backend.academy.data.ArgsData;
 import backend.academy.data.LogsStatistics;
 import backend.academy.handlers.ArgsHandler;
-import backend.academy.handlers.log_handlers.LogsStatisticsGatherer;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
+import backend.academy.handlers.log_handlers.NginxLogsStatisticsGatherer;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
@@ -30,7 +30,7 @@ public class ReportCreatorTest {
 
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+        NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
             .paths(argsData.paths())
             .from(argsData.from())
             .to(argsData.to())
@@ -38,7 +38,7 @@ public class ReportCreatorTest {
             .filterValuePattern(argsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
-        LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
+        LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
         ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);
 
@@ -64,7 +64,7 @@ public class ReportCreatorTest {
 
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+        NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
             .paths(argsData.paths())
             .from(argsData.from())
             .to(argsData.to())
@@ -72,7 +72,7 @@ public class ReportCreatorTest {
             .filterValuePattern(argsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
-        LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
+        LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
         ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);
 

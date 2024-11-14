@@ -1,7 +1,6 @@
 package backend.academy.handlers;
 
 import backend.academy.data.LogData;
-import backend.academy.handlers.log_handlers.LogsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
@@ -53,7 +52,7 @@ public class NginxLogsHandlerTest {
 
     @Test
     public void testParseInvalidLogLineData() {
-        LogsHandler logsHandler = new NginxLogsHandler();
+        NginxLogsHandler logsHandler = new NginxLogsHandler();
         assertThrows(IllegalArgumentException.class, () -> logsHandler.parseLogLineData(
             "[Fri Sep 09 10:42:29.902022 2011] [core:error] [pid 35708:tid 4328636416] [client 72.15.99.187] File does not exist: /usr/local/apache2/htdocs/favicon.ico"
         ));

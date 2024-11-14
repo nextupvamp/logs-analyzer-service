@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NginxLogsHandler implements LogsHandler {
+public class NginxLogsHandler {
     public static final String LOG_REGEX = "(?<address>\\S+) - (?<user>\\S+) \\[(?<time>.*)] "
         + "\"(?<method>GET|POST|HEAD|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?<resource>\\S+) "
         + "(?<http>[^\"]+)\" (?<status>\\d{3}) (?<bytes>\\d+) \"(?<referer>[^\"]+)\" \"(?<userAgent>[^\"]+)\".*";
@@ -25,7 +25,6 @@ public class NginxLogsHandler implements LogsHandler {
     public static final String REFERER_GROUP = "referer";
     public static final String USER_AGENT_GROUP = "userAgent";
 
-    @Override
     public LogData parseLogLineData(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (matcher.matches()) {
