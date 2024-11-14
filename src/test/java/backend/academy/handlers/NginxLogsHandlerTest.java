@@ -34,18 +34,19 @@ public class NginxLogsHandlerTest {
     ) {
         NginxLogsHandler nginxLogsHandler = new NginxLogsHandler();
         LogData logData = nginxLogsHandler.parseLogLineData(input);
-        LogData expected = new LogData(
-            address,
-            user,
-            ZonedDateTime.parse(date),
-            method,
-            resource,
-            http,
-            status,
-            bytes,
-            referer,
-            userAgent
-        );
+
+        LogData expected = LogData.builder()
+            .remoteAddress(address)
+            .remoteUser(user)
+            .timeLocal(ZonedDateTime.parse(date))
+            .requestMethod(method)
+            .requestResource(resource)
+            .requestHttpVersion(http)
+            .status(status)
+            .bytesSent(bytes)
+            .httpReferer(referer)
+            .httpUserAgent(userAgent)
+            .build();
 
         assertEquals(expected, logData);
     }
