@@ -29,6 +29,8 @@ public class ArgsHandler {
     public static final String FORMAT_ARG = "--format";
     public static final String FILTER_FIELD_ARG = "--filter-field";
     public static final String FILTER_VALUE_ARG = "--filter-value";
+    public static final String MARKDOWN_FORMAT_NAME = "markdown";
+    public static final String ADOC_FORMAT_NAME = "adoc";
 
     private final String[] args;
     private final List<Path> paths = new ArrayList<>();
@@ -93,13 +95,6 @@ public class ArgsHandler {
             .build();
     }
 
-    /**
-     * Iterates through paths until meet another arg or the end
-     * and adds them into collection.
-     *
-     * @param pos position of <code>--path</code> arg
-     * @return position of the last resolved path
-     */
     @SneakyThrows
     public int getPaths(int pos) {
         int newPos = pos + 1;
@@ -114,7 +109,7 @@ public class ArgsHandler {
             if (currentArg.matches("^(http|https|ftp|file)://.*")) {
                 uris.add(URI.create(currentArg));
             } else {
-                // if path doesn't contain any glob patterns
+                // if path doesn't contain any glob symbols
                 // that mean we deal with a single file
                 if (findFirstGlobSymbolIndex(currentArg) == -1) {
                     paths.add(Paths.get(currentArg));
@@ -165,8 +160,8 @@ public class ArgsHandler {
         int newPos = pos + 1;
         if (newPos < args.length && !isParameter(args[newPos])) {
             format = switch (args[newPos]) {
-                case "markdown" -> new MarkdownFormatter();
-                case "adoc" -> new ADocFormatter();
+                case MARKDOWN_FORMAT_NAME -> new MarkdownFormatter();
+                case ADOC_FORMAT_NAME -> new ADocFormatter();
                 default -> throw new IllegalArgumentException("Unsupported format: " + args[newPos]);
             };
         } else {
