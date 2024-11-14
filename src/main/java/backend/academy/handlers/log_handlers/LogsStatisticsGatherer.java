@@ -66,38 +66,46 @@ public class LogsStatisticsGatherer {
             List<URI> uris = paths.uris();
 
             if (files != null) {
-                for (Path path : files) {
-                    Path fileName = path.getFileName();
-                    if (fileName != null) {
-                        readPaths.add(fileName);
-                    }
-
-                    gatherData(logsReader.readFromFileAsStream(path, logsHandler));
-                }
+                gatherDataFromFiles(files, logsReader);
             }
 
             if (uris != null) {
-                for (URI uri : uris) {
-                    readUris.add(uri);
-                    gatherData(logsReader.readFromUriAsStream(uri, logsHandler));
-                }
+                gatherDataFromUrls(uris, logsReader);
             }
         }
 
-        return new LogsStatistics(
-            new PathsData(readUris, readPaths),
-            remoteAddresses,
-            remoteUsers,
-            from,
-            to,
-            requestsOnDate,
-            requestMethods,
-            requestResources,
-            statuses,
-            requestsAmount.get(),
-            countAverageBytesSent(bytesSent),
-            count95pBytesSent(bytesSent)
-        );
+        return LogsStatistics.builder()
+            .paths(new PathsData(readUris, readPaths))
+            .remoteAddresses(remoteAddresses)
+            .remoteUsers(remoteUsers)
+            .from(from)
+            .to(to)
+            .requestsOnDate(requestsOnDate)
+            .requestMethods(requestMethods)
+            .requestResources(requestResources)
+            .statuses(statuses)
+            .requestsAmount(requestsAmount.get())
+            .averageBytesSent(countAverageBytesSent(bytesSent))
+            .p95BytesSent(count95pBytesSent(bytesSent))
+            .build();
+    }
+
+    private void gatherDataFromUrls(List<URI> uris, LogsReader logsReader) {
+        for (URI uri : uris) {
+            readUris.add(uri);
+            gatherData(logsReader.readFromUriAsStream(uri, logsHandler));
+        }
+    }
+
+    private void gatherDataFromFiles(List<Path> files, LogsReader logsReader) {
+        for (Path path : files) {
+            Path fileName = path.getFileName();
+            if (fileName != null) {
+                readPaths.add(fileName);
+            }
+
+            gatherData(logsReader.readFromFileAsStream(path, logsHandler));
+        }
     }
 
     @SuppressWarnings({"checkstyle:IllegalIdentifierName", "checkstyle:LambdaParameterName"})

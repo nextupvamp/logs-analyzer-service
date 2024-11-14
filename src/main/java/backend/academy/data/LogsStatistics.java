@@ -2,8 +2,10 @@ package backend.academy.data;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
+import lombok.Builder;
 
 @SuppressWarnings("checkstyle:RecordComponentNumber")
+@Builder
 public record LogsStatistics(
     PathsData paths,
     Map<String, Integer> remoteAddresses,

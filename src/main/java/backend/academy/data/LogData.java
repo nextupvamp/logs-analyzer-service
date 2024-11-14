@@ -1,8 +1,10 @@
 package backend.academy.data;
 
 import java.time.ZonedDateTime;
+import lombok.Builder;
 
 @SuppressWarnings("checkstyle:RecordComponentNumber")
+@Builder
 public record LogData(
     String remoteAddress,
     String remoteUser,

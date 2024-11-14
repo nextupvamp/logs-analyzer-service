@@ -14,24 +14,34 @@ public class NginxLogsHandler implements LogsHandler {
     public static final Pattern LOG_PATTERN = Pattern.compile(LOG_REGEX);
     public static final String LOG_DATE_FORMAT = "dd/MMM/yyyy:HH:mm:ss Z";
     public static final Locale LOG_DATE_LOCALE = Locale.ENGLISH;
+    public static final String REMOTE_ADDRESS_GROUP = "address";
+    public static final String USER_GROUP = "user";
+    public static final String TIME_GROUP = "time";
+    public static final String METHOD_GROUP = "method";
+    public static final String RESOURCE_GROUP = "resource";
+    public static final String HTTP_GROUP = "http";
+    public static final String STATUS_GROUP = "status";
+    public static final String BYTES_GROUP = "bytes";
+    public static final String REFERER_GROUP = "referer";
+    public static final String USER_AGENT_GROUP = "userAgent";
 
     @Override
     public LogData parseLogLineData(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (matcher.matches()) {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(LOG_DATE_FORMAT, LOG_DATE_LOCALE);
-            return new LogData(
-                matcher.group("address"),
-                matcher.group("user"),
-                ZonedDateTime.parse(matcher.group("time"), dateTimeFormatter),
-                matcher.group("method"),
-                matcher.group("resource"),
-                matcher.group("http"),
-                Short.parseShort(matcher.group("status")),
-                Long.parseLong(matcher.group("bytes")),
-                matcher.group("referer"),
-                matcher.group("userAgent")
-            );
+            return LogData.builder()
+                .remoteAddress(matcher.group(REMOTE_ADDRESS_GROUP))
+                .remoteUser(matcher.group(USER_GROUP))
+                .timeLocal(ZonedDateTime.parse(matcher.group(TIME_GROUP), dateTimeFormatter))
+                .requestMethod(matcher.group(METHOD_GROUP))
+                .requestResource(matcher.group(RESOURCE_GROUP))
+                .requestHttpVersion(matcher.group(HTTP_GROUP))
+                .status(Short.parseShort(matcher.group(STATUS_GROUP)))
+                .bytesSent(Long.parseLong(matcher.group(BYTES_GROUP)))
+                .httpReferer(matcher.group(REFERER_GROUP))
+                .httpUserAgent(matcher.group(USER_AGENT_GROUP))
+                .build();
         } else {
             throw new IllegalArgumentException("Invalid log format: " + line);
         }

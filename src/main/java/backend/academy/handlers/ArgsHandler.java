@@ -76,14 +76,14 @@ public class ArgsHandler {
             format = new MarkdownFormatter();
         }
 
-        return new ArgsData(
-            new PathsData(uris, paths),
-            from,
-            to,
-            format,
-            filterField,
-            filterValuePattern
-        );
+        return ArgsData.builder()
+            .paths(new PathsData(uris, paths))
+            .from(from)
+            .to(to)
+            .format(format)
+            .filterField(filterField)
+            .filterValuePattern(filterValuePattern)
+            .build();
     }
 
     /**
