@@ -23,6 +23,13 @@ import lombok.SneakyThrows;
 
 @SuppressFBWarnings // suppress warnings concerned with user file paths input
 public class ArgsHandler {
+    public static final String PATH_ARG = "--path";
+    public static final String FROM_ARG = "--from";
+    public static final String TO_ARG = "--to";
+    public static final String FORMAT_ARG = "--format";
+    public static final String FILTER_FIELD_ARG = "--filter-field";
+    public static final String FILTER_VALUE_ARG = "--filter-value";
+
     private final String[] args;
     private final List<Path> paths = new ArrayList<>();
     private final List<URI> uris = new ArrayList<>();
@@ -38,21 +45,21 @@ public class ArgsHandler {
 
     @SuppressWarnings({"checkstyle:ModifiedControlVariable", "checkstyle:CyclomaticComplexity"})
     public ArgsData handle() {
-        // the loop iterates through keys ignoring parameters.
+        // the loop iterates through parameters ignoring args.
         // if it meets parameter on its way, an exception will be thrown
         for (int i = 0; i < args.length; ++i) {
-            if (isKey(args[i])) {
+            if (isParameter(args[i])) {
                 i = switch (args[i]) {
-                    case "--path" -> getPaths(i);
-                    case "--from" -> getFromTime(i);
-                    case "--to" -> getToTime(i);
-                    case "--format" -> getFormat(i);
-                    case "--filter-field" -> getFilterField(i);
-                    case "--filter-value" -> getFilterValuePattern(i);
-                    default -> throw new IllegalArgumentException("Unknown key: " + args[i]);
+                    case PATH_ARG -> getPaths(i);
+                    case FROM_ARG -> getFromTime(i);
+                    case TO_ARG -> getToTime(i);
+                    case FORMAT_ARG -> getFormat(i);
+                    case FILTER_FIELD_ARG -> getFilterField(i);
+                    case FILTER_VALUE_ARG -> getFilterValuePattern(i);
+                    default -> throw new IllegalArgumentException("Unknown argument: " + args[i]);
                 };
             } else {
-                throw new IllegalArgumentException("Excepted key on argument position " + i);
+                throw new IllegalArgumentException("Excepted argument on argument position " + i);
             }
         }
         if (paths.isEmpty() && uris.isEmpty()) {
@@ -87,20 +94,20 @@ public class ArgsHandler {
     }
 
     /**
-     * Iterates through paths until meet another key or the end
+     * Iterates through paths until meet another arg or the end
      * and adds them into collection.
      *
-     * @param pos position of <code>--path</code> key
+     * @param pos position of <code>--path</code> arg
      * @return position of the last resolved path
      */
     @SneakyThrows
     public int getPaths(int pos) {
         int newPos = pos + 1;
-        // loop starts from key parameters
+        // loop starts from arg parameters
         for (; newPos < args.length; ++newPos) {
             String currentArg = args[newPos];
-            // end loop if another key
-            if (isKey(currentArg)) {
+            // end loop if another arg
+            if (isParameter(currentArg)) {
                 break;
             }
 
@@ -134,7 +141,7 @@ public class ArgsHandler {
 
     public int getFromTime(int pos) {
         int newPos = pos + 1;
-        if (newPos < args.length && !isKey(args[newPos])) {
+        if (newPos < args.length && !isParameter(args[newPos])) {
             from = ZonedDateTime.parse(args[newPos]);
         } else {
             throw new IllegalArgumentException("Excepted date after --from on argument position " + newPos);
@@ -145,7 +152,7 @@ public class ArgsHandler {
 
     public int getToTime(int pos) {
         int newPos = pos + 1;
-        if (newPos < args.length && !isKey(args[newPos])) {
+        if (newPos < args.length && !isParameter(args[newPos])) {
             to = ZonedDateTime.parse(args[newPos]);
         } else {
             throw new IllegalArgumentException("Excepted date after --to on argument position " + newPos);
@@ -156,7 +163,7 @@ public class ArgsHandler {
 
     public int getFormat(int pos) {
         int newPos = pos + 1;
-        if (newPos < args.length && !isKey(args[newPos])) {
+        if (newPos < args.length && !isParameter(args[newPos])) {
             format = switch (args[newPos]) {
                 case "markdown" -> new MarkdownFormatter();
                 case "adoc" -> new ADocFormatter();
@@ -171,7 +178,7 @@ public class ArgsHandler {
 
     public int getFilterField(int pos) {
         int newPos = pos + 1;
-        if (newPos < args.length && !isKey(args[newPos])) {
+        if (newPos < args.length && !isParameter(args[newPos])) {
             filterField = args[newPos];
         } else {
             throw new IllegalArgumentException(
@@ -183,7 +190,7 @@ public class ArgsHandler {
 
     public int getFilterValuePattern(int pos) {
         int newPos = pos + 1;
-        if (newPos < args.length && !isKey(args[newPos])) {
+        if (newPos < args.length && !isParameter(args[newPos])) {
             filterValuePattern = Pattern.compile(args[newPos]);
         } else {
             throw new IllegalArgumentException(
@@ -255,7 +262,7 @@ public class ArgsHandler {
         return specialSymbolIndex;
     }
 
-    private boolean isKey(String arg) {
+    private boolean isParameter(String arg) {
         return arg.matches("^--.*");
     }
 }
