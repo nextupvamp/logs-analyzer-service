@@ -34,8 +34,8 @@ public class ReportCreatorTest {
             .paths(argsData.paths())
             .from(argsData.from())
             .to(argsData.to())
-            .filterMethod(argsData.filterField())
-            .filterValueRegex(argsData.filterValuePattern())
+            .filterField(argsData.filterField())
+            .filterValuePattern(argsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
@@ -68,8 +68,8 @@ public class ReportCreatorTest {
             .paths(argsData.paths())
             .from(argsData.from())
             .to(argsData.to())
-            .filterMethod(argsData.filterField())
-            .filterValueRegex(argsData.filterValuePattern())
+            .filterField(argsData.filterField())
+            .filterValuePattern(argsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();

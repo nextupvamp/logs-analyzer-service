@@ -35,8 +35,8 @@ public class LogsStatisticsGatherer {
     private final ZonedDateTime to;
     private final PathsData paths;
     private final LogsHandler logsHandler;
-    private final String filterMethod;
-    private final Pattern filterValueRegex;
+    private final String filterField;
+    private final Pattern filterValuePattern;
     private Predicate<LogData> dateTimePredicate;
     private Predicate<LogData> fieldFilterPredicate;
 
@@ -45,21 +45,21 @@ public class LogsStatisticsGatherer {
         PathsData paths,
         final ZonedDateTime from,
         final ZonedDateTime to,
-        String filterMethod,
-        Pattern filterValueRegex,
+        String filterField,
+        Pattern filterValuePattern,
         LogsHandler logsHandler
     ) {
         this.from = from;
         this.to = to;
-        this.filterMethod = filterMethod;
-        this.filterValueRegex = filterValueRegex;
+        this.filterField = filterField;
+        this.filterValuePattern = filterValuePattern;
         this.paths = paths;
         this.logsHandler = logsHandler;
     }
 
     @SneakyThrows
     public LogsStatistics gatherStatistics() {
-        initPredicates(from, to, filterMethod, filterValueRegex);
+        initPredicates(from, to, filterField, filterValuePattern);
 
         try (LogsReader logsReader = new LogsReader()) {
             List<Path> files = paths.paths();
