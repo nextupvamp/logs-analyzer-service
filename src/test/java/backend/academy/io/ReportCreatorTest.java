@@ -30,14 +30,14 @@ public class ReportCreatorTest {
 
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = new LogsStatisticsGatherer(
-            argsData.paths(),
-            argsData.from(),
-            argsData.to(),
-            argsData.filterField(),
-            argsData.filterValuePattern(),
-            new NginxLogsHandler()
-        );
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(argsData.paths())
+            .from(argsData.from())
+            .to(argsData.to())
+            .filterMethod(argsData.filterField())
+            .filterValueRegex(argsData.filterValuePattern())
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
 
         ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);
@@ -64,14 +64,14 @@ public class ReportCreatorTest {
 
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = new LogsStatisticsGatherer(
-            argsData.paths(),
-            argsData.from(),
-            argsData.to(),
-            argsData.filterField(),
-            argsData.filterValuePattern(),
-            new NginxLogsHandler()
-        );
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(argsData.paths())
+            .from(argsData.from())
+            .to(argsData.to())
+            .filterMethod(argsData.filterField())
+            .filterValueRegex(argsData.filterValuePattern())
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
 
         ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);

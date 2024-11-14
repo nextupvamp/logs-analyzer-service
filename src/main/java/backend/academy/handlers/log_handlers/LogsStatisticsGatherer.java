@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import lombok.Builder;
 import lombok.SneakyThrows;
 
 public class LogsStatisticsGatherer {
@@ -28,17 +29,19 @@ public class LogsStatisticsGatherer {
     private final Map<String, Integer> requestResources = new HashMap<>();
     private final Map<Short, Integer> statuses = new HashMap<>();
     private final AtomicInteger requestsAmount = new AtomicInteger(0);
+    private final Map<ZonedDateTime, Integer> requestsOnDate = new HashMap<>();
+
     private final ZonedDateTime from;
     private final ZonedDateTime to;
     private final PathsData paths;
     private final LogsHandler logsHandler;
     private final String filterMethod;
     private final Pattern filterValueRegex;
-    private final Map<ZonedDateTime, Integer> requestsOnDate = new HashMap<>();
     private Predicate<LogData> dateTimePredicate;
     private Predicate<LogData> fieldFilterPredicate;
 
-    public LogsStatisticsGatherer(
+    @Builder
+    private LogsStatisticsGatherer(
         PathsData paths,
         final ZonedDateTime from,
         final ZonedDateTime to,

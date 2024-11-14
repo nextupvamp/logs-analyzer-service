@@ -43,8 +43,12 @@ public class LogsStatisticsGathererTest {
         ZonedDateTime from = ZonedDateTime.parse("2015-05-17T08:05:00Z");
         ZonedDateTime to = ZonedDateTime.parse("2015-05-17T08:05:30Z");
         PathsData logPaths = new PathsData(null, PATHS);
-        LogsStatisticsGatherer logsStatisticsGatherer =
-            new LogsStatisticsGatherer(logPaths, from, to, null, null, new NginxLogsHandler());
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(logPaths)
+            .from(from)
+            .to(to)
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
@@ -56,8 +60,11 @@ public class LogsStatisticsGathererTest {
     public void testFromDate() {
         ZonedDateTime from = ZonedDateTime.parse("2015-05-17T08:05:00Z");
         PathsData logPaths = new PathsData(null, PATHS);
-        LogsStatisticsGatherer logsStatisticsGatherer =
-            new LogsStatisticsGatherer(logPaths, from, null, null, null, new NginxLogsHandler());
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(logPaths)
+            .from(from)
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
@@ -69,8 +76,11 @@ public class LogsStatisticsGathererTest {
     public void testToDate() {
         ZonedDateTime to = ZonedDateTime.parse("2015-05-17T08:05:30Z");
         PathsData logPaths = new PathsData(null, PATHS);
-        LogsStatisticsGatherer logsStatisticsGatherer =
-            new LogsStatisticsGatherer(logPaths, null, to, null, null, new NginxLogsHandler());
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(logPaths)
+            .to(to)
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
@@ -85,9 +95,10 @@ public class LogsStatisticsGathererTest {
         InputStream is = Files.newInputStream(logPaths.paths().getFirst());
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
         long lines = bufferedReader.lines().count();
-
-        LogsStatisticsGatherer logsStatisticsGatherer =
-            new LogsStatisticsGatherer(logPaths, null, null, null, null, new NginxLogsHandler());
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(logPaths)
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics logsStatistics = logsStatisticsGatherer.gatherStatistics();
 
         assertEquals(lines, logsStatistics.requestsAmount());
@@ -116,14 +127,14 @@ public class LogsStatisticsGathererTest {
         };
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = new LogsStatisticsGatherer(
-            argsData.paths(),
-            argsData.from(),
-            argsData.to(),
-            argsData.filterField(),
-            argsData.filterValuePattern(),
-            new NginxLogsHandler()
-        );
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(argsData.paths())
+            .from(argsData.from())
+            .to(argsData.to())
+            .filterMethod(argsData.filterField())
+            .filterValueRegex(argsData.filterValuePattern())
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
 
         assertEquals(30, ls.requestsAmount()); // there are 30 lines in logs1.txt
@@ -145,14 +156,14 @@ public class LogsStatisticsGathererTest {
 
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
-        LogsStatisticsGatherer logsStatisticsGatherer = new LogsStatisticsGatherer(
-            argsData.paths(),
-            argsData.from(),
-            argsData.to(),
-            argsData.filterField(),
-            argsData.filterValuePattern(),
-            new NginxLogsHandler()
-        );
+        LogsStatisticsGatherer logsStatisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(argsData.paths())
+            .from(argsData.from())
+            .to(argsData.to())
+            .filterMethod(argsData.filterField())
+            .filterValueRegex(argsData.filterValuePattern())
+            .logsHandler(new NginxLogsHandler())
+            .build();
         LogsStatistics ls = logsStatisticsGatherer.gatherStatistics();
 
         assertEquals(16, ls.requestsAmount()); // there are 16 30* statuses

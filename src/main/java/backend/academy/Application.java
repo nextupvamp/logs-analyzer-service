@@ -24,14 +24,14 @@ public class Application {
         ArgsHandler argsHandler = new ArgsHandler(args);
         ArgsData argsData = argsHandler.handle();
 
-        LogsStatisticsGatherer statisticsGatherer = new LogsStatisticsGatherer(
-            argsData.paths(),
-            argsData.from(),
-            argsData.to(),
-            argsData.filterField(),
-            argsData.filterValuePattern(),
-            new NginxLogsHandler()
-        );
+        LogsStatisticsGatherer statisticsGatherer = LogsStatisticsGatherer.builder()
+            .paths(argsData.paths())
+            .from(argsData.from())
+            .to(argsData.to())
+            .filterMethod(argsData.filterField())
+            .filterValueRegex(argsData.filterValuePattern())
+            .logsHandler(new NginxLogsHandler())
+            .build();
 
         String fileFormat = argsData.format().getFileFormat();
         Properties properties = new Properties();
