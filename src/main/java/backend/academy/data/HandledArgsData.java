@@ -12,6 +12,7 @@ public record HandledArgsData(
     ZonedDateTime to,
     TextFormatter format,
     String filterField,
-    Pattern filterValuePattern
+    Pattern filterValuePattern,
+    String reportFileName
 ) {
 }

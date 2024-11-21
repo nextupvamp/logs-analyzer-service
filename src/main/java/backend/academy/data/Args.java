@@ -12,6 +12,7 @@ public class Args {
     private static final String FORMAT_ARG = "--format";
     private static final String FILTER_FIELD_ARG = "--filter-field";
     private static final String FILTER_VALUE_ARG = "--filter-value";
+    private static final String REPORT_FILE_NAME = "--report-file-name";
 
     @Parameter(names = PATH_ARG, variableArity = true, required = true)
     private List<String> paths;
@@ -30,4 +31,7 @@ public class Args {
 
     @Parameter(names = FILTER_VALUE_ARG, arity = 1)
     private String filterValue;
+
+    @Parameter(names = REPORT_FILE_NAME, arity = 1)
+    private String reportFileName;
 }

@@ -57,6 +57,7 @@ public class ArgsHandler {
         TextFormatter formatter = getFormatter(parsedArgs.format());
         String filterField = returnNullOrResult(parsedArgs.filterField(), it -> it);
         Pattern filterValuePattern = returnNullOrResult(parsedArgs.filterValue(), Pattern::compile);
+        String reportFileName = returnNullOrResult(parsedArgs.reportFileName(), it -> it);
 
         if (handledPaths.paths().isEmpty() && handledPaths.uris().isEmpty()) {
             throw new IllegalArgumentException("Missing paths");
@@ -84,11 +85,12 @@ public class ArgsHandler {
             .format(formatter)
             .filterField(filterField)
             .filterValuePattern(filterValuePattern)
+            .reportFileName(reportFileName)
             .build();
     }
 
     @SneakyThrows
-    public PathsData handlePaths(List<String> parsedPaths) {
+    private PathsData handlePaths(List<String> parsedPaths) {
         List<URI> uris = new ArrayList<>();
         List<Path> paths = new ArrayList<>();
 

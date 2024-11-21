@@ -18,7 +18,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Application {
-    public static final String REPORT_FILE_NAME = "report";
+    private static final String DEFAULT_FILE_NAME = "report";
 
     @SneakyThrows
     @SuppressFBWarnings // suppress warnings concerned with file user input
@@ -37,12 +37,19 @@ public class Application {
 
         String fileFormat = handledArgsData.format().getFileFormat();
         Properties properties = new Properties();
-        properties.load(Application.class.getClassLoader().getResourceAsStream("application.property"));
+        properties.load(Application.class.getClassLoader().getResourceAsStream("application.properties"));
+
+        String reportFileName = handledArgsData.reportFileName();
+        if (reportFileName == null) {
+            reportFileName = DEFAULT_FILE_NAME + Instant.now().toEpochMilli();
+        }
+
         Path reportFile = Paths.get(
-            properties.getProperty("report.directory.file.path") + REPORT_FILE_NAME + Instant.now().toEpochMilli()
+            properties.getProperty("report.directory.file.path") + reportFileName
                 + fileFormat);
 
         PrintStream printStream = new PrintStream(Files.newOutputStream(reportFile), true, StandardCharsets.UTF_8);
+
         ReportCreator.createReport(statisticsGatherer.gatherStatistics(), handledArgsData.format(), printStream);
     }
 }
