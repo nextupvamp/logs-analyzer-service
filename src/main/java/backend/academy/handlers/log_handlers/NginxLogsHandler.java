@@ -8,12 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NginxLogsHandler {
-    private static final String LOG_REGEX = "(?<address>\\S+) - (?<user>\\S+) \\[(?<time>.*)] "
+    private static final Pattern LOG_PATTERN = Pattern.compile("(?<address>\\S+) - (?<user>\\S+) \\[(?<time>.*)] "
         + "\"(?<method>GET|POST|HEAD|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?<resource>\\S+) "
-        + "(?<http>[^\"]+)\" (?<status>\\d{3}) (?<bytes>\\d+) \"(?<referer>[^\"]+)\" \"(?<userAgent>[^\"]+)\".*";
-    static final Pattern LOG_PATTERN = Pattern.compile(LOG_REGEX);
-    static final String LOG_DATE_FORMAT = "dd/MMM/yyyy:HH:mm:ss Z";
-    static final Locale LOG_DATE_LOCALE = Locale.ENGLISH;
+        + "(?<http>[^\"]+)\" (?<status>\\d{3}) (?<bytes>\\d+) \"(?<referer>[^\"]+)\" \"(?<userAgent>[^\"]+)\".*");
+    private static final String LOG_DATE_FORMAT = "dd/MMM/yyyy:HH:mm:ss Z";
+    private static final Locale LOG_DATE_LOCALE = Locale.ENGLISH;
     static final String REMOTE_ADDRESS_GROUP = "address";
     static final String USER_GROUP = "user";
     static final String TIME_GROUP = "time";

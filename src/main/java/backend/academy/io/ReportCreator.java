@@ -23,10 +23,10 @@ public class ReportCreator {
         STATUS_CODES_NAME = new Properties();
         try {
             STATUS_CODES_NAME.load(
-                ReportCreator.class.getClassLoader().getResourceAsStream("status_codes.property")
+                ReportCreator.class.getClassLoader().getResourceAsStream("status_codes.properties")
             );
         } catch (IOException e) {
-            throw new RuntimeException("status_codes.property not found", e);
+            throw new RuntimeException("status_codes.properties not found", e);
         }
     }
 
