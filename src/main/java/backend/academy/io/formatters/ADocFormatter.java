@@ -1,16 +1,16 @@
 package backend.academy.io.formatters;
 
 public class ADocFormatter implements TextFormatter {
-    public static final int MAX_HEADER_LEVEL = 6;
-    public static final int MIN_HEADER_LEVEL = 1;
-    public static final String TABLE_FOOTER = "|===";
-    public static final String ADOC_FILE_FROMAT = ".adoc";
-    public static final String MONOSPACED_QUOTE = "`";
-    public static final char COLUMN_SEPARATOR = '|';
-    public static final String HEADER_SIGN = "=";
-    public static final char SPACE = ' ';
-    public static final String TABLE_HEADER_START = "[cols=\"";
-    public static final String TABLE_HEADER_END = "\"]";
+    private static final int MAX_HEADER_LEVEL = 6;
+    private static final int MIN_HEADER_LEVEL = 1;
+    private static final String TABLE_FOOTER = "|===";
+    private static final String ADOC_FILE_FROMAT = ".adoc";
+    private static final String MONOSPACED_QUOTE = "`";
+    private static final char COLUMN_SEPARATOR = '|';
+    private static final String HEADER_SIGN = "=";
+    private static final char SPACE = ' ';
+    private static final String TABLE_HEADER_START = "[cols=\"";
+    private static final String TABLE_HEADER_END = "\"]";
 
     @Override
     public String toHeaderLine(String line, int level) {

@@ -1,14 +1,14 @@
 package backend.academy.io.formatters;
 
 public class MarkdownFormatter implements TextFormatter {
-    public static final int MAX_HEADER_LEVEL = 6;
-    public static final int MIN_HEADER_LEVEL = 1;
-    public static final String MD_FILE_FORMAT = ".md";
-    public static final String HEADER_SIGN = "#";
-    public static final String MONOSPACED_QUOTE = "`";
-    public static final char SPACE = ' ';
-    public static final char COLUMN_SEPARATOR = '|';
-    public static final String HEADER_SEPARATOR = " --- |";
+    private static final int MAX_HEADER_LEVEL = 6;
+    private static final int MIN_HEADER_LEVEL = 1;
+    private static final String MD_FILE_FORMAT = ".md";
+    private static final String HEADER_SIGN = "#";
+    private static final String MONOSPACED_QUOTE = "`";
+    private static final char SPACE = ' ';
+    private static final char COLUMN_SEPARATOR = '|';
+    private static final String HEADER_SEPARATOR = " --- |";
 
     @Override
     public String toHeaderLine(String line, int level) {
