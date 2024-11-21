@@ -13,12 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.SneakyThrows;
+import lombok.extern.java.Log;
 
 public class NginxLogsStatisticsGatherer {
     private static final double THE_95_TH_PERCENTILE = 0.95;
@@ -158,41 +161,20 @@ public class NginxLogsStatisticsGatherer {
         if (filterField == null || filterValueRegex == null) {
             return _ -> true;
         }
-        return switch (filterField) {
-            case NginxLogsHandler.REMOTE_ADDRESS_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.remoteAddress());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.USER_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.remoteUser());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.METHOD_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.requestMethod());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.RESOURCE_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.requestResource());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.HTTP_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.requestHttpVersion());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.STATUS_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(String.valueOf(it.status()));
-                return matcher.matches();
-            };
-            case NginxLogsHandler.REFERER_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.httpReferer());
-                return matcher.matches();
-            };
-            case NginxLogsHandler.USER_AGENT_GROUP -> it -> {
-                Matcher matcher = filterValueRegex.matcher(it.httpUserAgent());
-                return matcher.matches();
-            };
+
+        Function<LogData, String> method = switch (filterField) {
+            case NginxLogsHandler.REMOTE_ADDRESS_GROUP -> LogData::remoteAddress;
+            case NginxLogsHandler.USER_GROUP -> LogData::remoteUser;
+            case NginxLogsHandler.METHOD_GROUP -> LogData::requestMethod;
+            case NginxLogsHandler.RESOURCE_GROUP -> LogData::requestResource;
+            case NginxLogsHandler.HTTP_GROUP -> LogData::requestHttpVersion;
+            case NginxLogsHandler.STATUS_GROUP -> it -> String.valueOf(it.status());
+            case NginxLogsHandler.REFERER_GROUP -> LogData::httpReferer;
+            case NginxLogsHandler.USER_AGENT_GROUP -> LogData::httpUserAgent;
             default -> throw new IllegalArgumentException("Unknown filter field: " + filterField);
         };
+
+            return it -> filterValueRegex.matcher(method.apply(it)).matches();
     }
 
     private void initPredicates(ZonedDateTime from, ZonedDateTime to, String filterField, Pattern filterValueRegex) {
