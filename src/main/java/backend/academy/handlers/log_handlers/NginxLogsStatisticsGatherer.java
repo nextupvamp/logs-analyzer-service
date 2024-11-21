@@ -1,11 +1,12 @@
 package backend.academy.handlers.log_handlers;
 
 import backend.academy.data.LogData;
-import backend.academy.data.statistics.ComputedLogsStatistics;
-import backend.academy.data.statistics.NativeLogsStatistics;
-import backend.academy.data.statistics.LogsStatistics;
 import backend.academy.data.PathsData;
+import backend.academy.data.statistics.ComputedLogsStatistics;
+import backend.academy.data.statistics.LogsStatistics;
+import backend.academy.data.statistics.NativeLogsStatistics;
 import backend.academy.io.LogsReader;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.SneakyThrows;
 
+@SuppressFBWarnings // it says that there's redundant boolean boxing in lambdas
 public class NginxLogsStatisticsGatherer {
     private static final double THE_95_TH_PERCENTILE = 0.95;
 

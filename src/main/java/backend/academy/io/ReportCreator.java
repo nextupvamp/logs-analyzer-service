@@ -125,7 +125,8 @@ public class ReportCreator {
             nativeStatistics.to() == null ? "-" : nativeStatistics.to().toString()));
 
         out.println(formatter.toTableRow("Number of requests", String.valueOf(computedStatistics.requestsAmount())));
-        out.println(formatter.toTableRow("Average response size", String.valueOf(computedStatistics.averageBytesSent())));
+        out.println(
+            formatter.toTableRow("Average response size", String.valueOf(computedStatistics.averageBytesSent())));
         out.println(formatter.toTableRow("95p response size", String.valueOf(computedStatistics.p95BytesSent())));
         out.println(formatter.getTableFooter());
     }

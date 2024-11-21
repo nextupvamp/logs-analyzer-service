@@ -1,11 +1,12 @@
 package backend.academy.data.statistics;
 
 import backend.academy.data.PathsData;
-import lombok.Builder;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import lombok.Builder;
 
 @Builder
+@SuppressWarnings("checkstyle:RecordComponentNumber")
 public record NativeLogsStatistics(
     PathsData paths,
     Map<String, Integer> remoteAddresses,
