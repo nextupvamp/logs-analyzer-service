@@ -3,7 +3,7 @@ package backend.academy.handlers;
 import backend.academy.data.Args;
 import backend.academy.data.HandledArgsData;
 import backend.academy.data.PathsData;
-import backend.academy.io.formatters.Format;
+import backend.academy.io.formatters.TextFormats;
 import backend.academy.io.formatters.MarkdownFormatter;
 import backend.academy.io.formatters.TextFormatter;
 import com.beust.jcommander.JCommander;
@@ -138,10 +138,10 @@ public class ArgsHandler {
             return new MarkdownFormatter();
         }
 
-        Format[] availableFormats = Format.values();
-        for (Format currentFormat : availableFormats) {
-            if (currentFormat.format().equalsIgnoreCase(formatString)) {
-                return currentFormat.formatter();
+        TextFormats[] availableTextFormats = TextFormats.values();
+        for (TextFormats currentTextFormats : availableTextFormats) {
+            if (currentTextFormats.format().equalsIgnoreCase(formatString)) {
+                return currentTextFormats.formatter();
             }
         }
 

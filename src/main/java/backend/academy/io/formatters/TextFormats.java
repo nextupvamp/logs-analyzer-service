@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum Format {
+public enum TextFormats {
     MARKDOWN("markdown", new MarkdownFormatter()),
     ADOC("adoc", new ADocFormatter());
 
