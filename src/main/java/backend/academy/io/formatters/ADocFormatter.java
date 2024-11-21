@@ -14,7 +14,8 @@ public class ADocFormatter implements TextFormatter {
 
     @Override
     public String toHeaderLine(String line, int level) {
-        // 6 if greater than 6 and 1 if less then 1
+        // if level is greater or smaller than max or min allowed value
+        // it will be set to max or min value respectively
         return HEADER_SIGN.repeat(Math.min(MAX_HEADER_LEVEL, Math.max(MIN_HEADER_LEVEL, level)))
             + SPACE + line;
     }
