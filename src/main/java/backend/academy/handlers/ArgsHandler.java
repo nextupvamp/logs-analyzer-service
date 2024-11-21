@@ -8,6 +8,7 @@ import backend.academy.io.formatters.MarkdownFormatter;
 import backend.academy.io.formatters.TextFormatter;
 import com.beust.jcommander.JCommander;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -91,7 +92,6 @@ public class ArgsHandler {
             .build();
     }
 
-    @SneakyThrows
     private PathsData handlePaths(List<String> parsedPaths) {
         List<URI> uris = new ArrayList<>();
         List<Path> paths = new ArrayList<>();
@@ -106,31 +106,36 @@ public class ArgsHandler {
                 if (findFirstGlobSymbolIndex(currentPath) == -1) {
                     paths.add(Paths.get(currentPath));
                 } else {
-                    // find the root dir that will be the root
-                    // of file tree that we'll walk through
-                    Path rootDir = extractRootDir(currentPath);
-                    // extract the glob pattern of filepath that we
-                    // are searching to
-                    String pattern = extractPattern(currentPath);
-                    // now walk through our file tree, visit all the
-                    // files on the way and check if they match
-                    // the pattern
-                    Files.walkFileTree(rootDir, new SimpleFileVisitor<>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:"
-                                + pattern);
-                            Path relativePath = rootDir.relativize(file);
-                            if (matcher.matches(relativePath)) {
-                                paths.add(file.toAbsolutePath());
-                            }
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    findFilePathsByGlobPattern(currentPath, paths);
                 }
             }
         }
         return new PathsData(uris, paths);
+    }
+
+    @SneakyThrows
+    private void findFilePathsByGlobPattern(String currentPath, List<Path> paths) {
+        // find the root dir that will be the root
+        // of file tree that we'll walk through
+        Path rootDir = extractRootDir(currentPath);
+        // extract the glob pattern of filepath that we
+        // are searching to
+        String pattern = extractPattern(currentPath);
+        // now walk through our file tree, visit all the
+        // files on the way and check if they match
+        // the pattern
+        Files.walkFileTree(rootDir, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:"
+                    + pattern);
+                Path relativePath = rootDir.relativize(file);
+                if (matcher.matches(relativePath)) {
+                    paths.add(file.toAbsolutePath());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     private TextFormatter getFormatter(String formatString) {
