@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -20,6 +21,8 @@ import lombok.Builder;
 import lombok.SneakyThrows;
 
 public class NginxLogsStatisticsGatherer {
+    private static final double THE_95_TH_PERCENTILE = 0.95;
+
     private final List<Path> readPaths = new ArrayList<>();
     private final List<URI> readUris = new ArrayList<>();
     private final List<Long> bytesSent = new ArrayList<>();
@@ -133,28 +136,20 @@ public class NginxLogsStatisticsGatherer {
         return bytesSent.stream().reduce(0L, Long::sum) / bytesSent.size();
     }
 
-    @SuppressWarnings("checkstyle:MagicNumber")
     public static long count95pBytesSent(List<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
         bytesSent.sort(Long::compareTo);
 
-        return bytesSent.get((int) (bytesSent.size() * 0.95));
+        return bytesSent.get((int) (bytesSent.size() * THE_95_TH_PERCENTILE));
     }
 
     private Predicate<LogData> buildDateTimePredicate(ZonedDateTime from, ZonedDateTime to) {
         return it -> {
-            boolean before = true;
-            boolean after = true;
-            if (from != null) {
-                after = !it.timeLocal().isBefore(from);
-            }
-            if (to != null) {
-                before = !it.timeLocal().isAfter(to);
-            }
-
-            return before && after;
+           boolean before = Optional.ofNullable(from).map(it.timeLocal()::isBefore).orElse(false);
+           boolean after = Optional.ofNullable(to).map(it.timeLocal()::isAfter).orElse(false);
+           return !before && !after;
         };
     }
 
