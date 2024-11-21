@@ -49,7 +49,8 @@ public class Application {
                 + fileFormat);
 
         PrintStream printStream = new PrintStream(Files.newOutputStream(reportFile), true, StandardCharsets.UTF_8);
-
-        ReportCreator.createReport(statisticsGatherer.gatherStatistics(), handledArgsData.format(), printStream);
+        ReportCreator reportCreator =
+            new ReportCreator(printStream, handledArgsData.format(), statisticsGatherer.gatherStatistics());
+        reportCreator.createReport();
     }
 }

@@ -40,7 +40,7 @@ public class ReportCreatorTest {
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        ReportCreator.createReport(ls, handledArgsData.format(), BAOSPrintStream);
+        new ReportCreator(BAOSPrintStream, handledArgsData.format(), ls).createReport();
 
         String report = BAOS.toString();
         BufferedReader br = new BufferedReader(
@@ -74,7 +74,7 @@ public class ReportCreatorTest {
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        ReportCreator.createReport(ls, handledArgsData.format(), BAOSPrintStream);
+        new ReportCreator(BAOSPrintStream, handledArgsData.format(), ls).createReport();
 
         String report = BAOS.toString();
         BufferedReader br = new BufferedReader(

@@ -11,13 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
-import lombok.experimental.UtilityClass;
+import lombok.AllArgsConstructor;
 
-@UtilityClass
+@AllArgsConstructor
 @SuppressWarnings("checkstyle:MultipleStringLiterals")
 public class ReportCreator {
-    public static final int DEFAULT_HEADER_LEVEL = 4;
-    public static final Properties STATUS_CODES_NAME;
+    private static final int DEFAULT_HEADER_LEVEL = 4;
+    private static final Properties STATUS_CODES_NAME;
+
+    private PrintStream out;
+    private TextFormatter formatter;
+    private LogsStatistics logsStatistics;
 
     static {
         STATUS_CODES_NAME = new Properties();
@@ -30,7 +34,7 @@ public class ReportCreator {
         }
     }
 
-    public static void createReport(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
+    public void createReport() {
         if (logsStatistics == null
             || (logsStatistics.paths().uris().isEmpty()
             && logsStatistics.paths().paths().isEmpty())) {
@@ -38,80 +42,78 @@ public class ReportCreator {
         }
 
         // default statistics
-        printGeneralStatistics(logsStatistics, tf, out);
-        printResourcesStatistics(logsStatistics, tf, out);
-        printResourceCodesStatistics(logsStatistics, tf, out);
+        printGeneralStatistics(logsStatistics);
+        printResourcesStatistics(logsStatistics);
+        printResourceCodesStatistics(logsStatistics);
         // additional statistics
-        printRequestMethodsStatistics(logsStatistics, tf, out);
-        printRequestOnDateStatistics(logsStatistics, tf, out);
+        printRequestMethodsStatistics(logsStatistics);
+        printRequestOnDateStatistics(logsStatistics);
     }
 
-    private static void printRequestOnDateStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
-        out.println(tf.toHeaderLine("Requests on date", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Date", "Amount"));
+    private void printRequestOnDateStatistics(LogsStatistics logsStatistics) {
+        out.println(formatter.toHeaderLine("Requests on date", DEFAULT_HEADER_LEVEL));
+        out.println(formatter.toTableHeader("Date", "Amount"));
         logsStatistics.requestsOnDate().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-            .forEach(entry -> out.println(tf.toTableRow(entry.getKey().toString(), entry.getValue().toString())));
-        out.println(tf.getTableFooter());
+            .forEach(
+                entry -> out.println(formatter.toTableRow(entry.getKey().toString(), entry.getValue().toString())));
+        out.println(formatter.getTableFooter());
     }
 
-    private static void printRequestMethodsStatistics(
-        LogsStatistics logsStatistics,
-        TextFormatter tf,
-        PrintStream out
-    ) {
-        out.println(tf.toHeaderLine("Request Methods", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Method", "Amount"));
+    private void printRequestMethodsStatistics(LogsStatistics logsStatistics) {
+        out.println(formatter.toHeaderLine("Request Methods", DEFAULT_HEADER_LEVEL));
+        out.println(formatter.toTableHeader("Method", "Amount"));
         logsStatistics.requestMethods().entrySet().stream()
             .sorted(Map.Entry.comparingByValue())
-            .forEach(entry -> out.println(tf.toTableRow(entry.getKey(), entry.getValue().toString())));
-        out.println(tf.getTableFooter());
+            .forEach(entry -> out.println(formatter.toTableRow(entry.getKey(), entry.getValue().toString())));
+        out.println(formatter.getTableFooter());
     }
 
-    private static void printResourceCodesStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
-        out.println(tf.toHeaderLine("Response codes", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Code", "Name", "Amount"));
+    private void printResourceCodesStatistics(LogsStatistics logsStatistics) {
+        out.println(formatter.toHeaderLine("Response codes", DEFAULT_HEADER_LEVEL));
+        out.println(formatter.toTableHeader("Code", "Name", "Amount"));
         logsStatistics.statuses().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
             .forEach(
-                e -> out.println(tf.toTableRow(String.valueOf(e.getKey()),
+                e -> out.println(formatter.toTableRow(String.valueOf(e.getKey()),
                     STATUS_CODES_NAME.getProperty(String.valueOf(e.getKey())),
                     e.getValue().toString()
                 ))
             );
-        out.println(tf.getTableFooter());
+        out.println(formatter.getTableFooter());
     }
 
-    private static void printResourcesStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
-        out.println(tf.toHeaderLine("Queried resources", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Resource", "Amount"));
+    private void printResourcesStatistics(LogsStatistics logsStatistics) {
+        out.println(formatter.toHeaderLine("Queried resources", DEFAULT_HEADER_LEVEL));
+        out.println(formatter.toTableHeader("Resource", "Amount"));
         logsStatistics.requestResources().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-            .forEach(e -> out.println(tf.toTableRow(tf.toMonospaced(e.getKey()), e.getValue().toString())));
-        out.println(tf.getTableFooter());
+            .forEach(
+                e -> out.println(formatter.toTableRow(formatter.toMonospaced(e.getKey()), e.getValue().toString())));
+        out.println(formatter.getTableFooter());
     }
 
-    private static void printGeneralStatistics(LogsStatistics logsStatistics, TextFormatter tf, PrintStream out) {
-        out.println(tf.toHeaderLine("General information", DEFAULT_HEADER_LEVEL));
-        out.println(tf.toTableHeader("Metric", "Value"));
+    private void printGeneralStatistics(LogsStatistics logsStatistics) {
+        out.println(formatter.toHeaderLine("General information", DEFAULT_HEADER_LEVEL));
+        out.println(formatter.toTableHeader("Metric", "Value"));
 
         Stream<String> urisStream = logsStatistics.paths().uris().stream().map(URI::toString);
         Stream<String> pathsStream = logsStatistics.paths().paths().stream().map(Path::toString);
         List<String> pathsList = Stream.concat(urisStream, pathsStream).toList();
 
-        out.println(tf.toTableRow("Files", tf.toMonospaced(pathsList.getFirst())));
+        out.println(formatter.toTableRow("Files", formatter.toMonospaced(pathsList.getFirst())));
         for (int i = 1; i < pathsList.size(); i++) {
-            out.println(tf.toTableRow("     ", tf.toMonospaced(pathsList.get(i))));
+            out.println(formatter.toTableRow("     ", formatter.toMonospaced(pathsList.get(i))));
         }
 
-        out.println(tf.toTableRow("Start date",
+        out.println(formatter.toTableRow("Start date",
             logsStatistics.from() == null ? "-" : logsStatistics.from().toString()));
-        out.println(tf.toTableRow("End date",
+        out.println(formatter.toTableRow("End date",
             logsStatistics.to() == null ? "-" : logsStatistics.to().toString()));
 
-        out.println(tf.toTableRow("Number of requests", String.valueOf(logsStatistics.requestsAmount())));
-        out.println(tf.toTableRow("Average response size", String.valueOf(logsStatistics.averageBytesSent())));
-        out.println(tf.toTableRow("95p response size", String.valueOf(logsStatistics.p95BytesSent())));
-        out.println(tf.getTableFooter());
+        out.println(formatter.toTableRow("Number of requests", String.valueOf(logsStatistics.requestsAmount())));
+        out.println(formatter.toTableRow("Average response size", String.valueOf(logsStatistics.averageBytesSent())));
+        out.println(formatter.toTableRow("95p response size", String.valueOf(logsStatistics.p95BytesSent())));
+        out.println(formatter.getTableFooter());
     }
 }
