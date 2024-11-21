@@ -1,7 +1,9 @@
 package backend.academy.handlers.log_handlers;
 
 import backend.academy.data.LogData;
-import backend.academy.data.LogsStatistics;
+import backend.academy.data.statistics.ComputedLogsStatistics;
+import backend.academy.data.statistics.NativeLogsStatistics;
+import backend.academy.data.statistics.LogsStatistics;
 import backend.academy.data.PathsData;
 import backend.academy.io.LogsReader;
 import java.net.URI;
@@ -77,20 +79,25 @@ public class NginxLogsStatisticsGatherer {
             }
         }
 
-        return LogsStatistics.builder()
-            .paths(new PathsData(readUris, readPaths))
-            .remoteAddresses(remoteAddresses)
-            .remoteUsers(remoteUsers)
-            .from(from)
-            .to(to)
-            .requestsOnDate(requestsOnDate)
-            .requestMethods(requestMethods)
-            .requestResources(requestResources)
-            .statuses(statuses)
-            .requestsAmount(requestsAmount.get())
-            .averageBytesSent(countAverageBytesSent(bytesSent))
-            .p95BytesSent(count95pBytesSent(bytesSent))
-            .build();
+        return new LogsStatistics(
+            NativeLogsStatistics.builder()
+                .paths(new PathsData(readUris, readPaths))
+                .remoteAddresses(remoteAddresses)
+                .remoteUsers(remoteUsers)
+                .from(from)
+                .to(to)
+                .requestsOnDate(requestsOnDate)
+                .requestMethods(requestMethods)
+                .requestResources(requestResources)
+                .statuses(statuses)
+                .build(),
+
+            ComputedLogsStatistics.builder()
+                .requestsAmount(requestsAmount.get())
+                .averageBytesSent(countAverageBytesSent(bytesSent))
+                .p95BytesSent(count95pBytesSent(bytesSent))
+                .build()
+        );
     }
 
     private void gatherDataFromUrls(List<URI> uris, LogsReader logsReader) {

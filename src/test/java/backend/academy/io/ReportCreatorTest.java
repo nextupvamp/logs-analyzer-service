@@ -1,7 +1,7 @@
 package backend.academy.io;
 
 import backend.academy.data.HandledArgsData;
-import backend.academy.data.LogsStatistics;
+import backend.academy.data.statistics.LogsStatistics;
 import backend.academy.handlers.ArgsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsStatisticsGatherer;

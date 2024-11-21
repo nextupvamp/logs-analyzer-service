@@ -1,7 +1,7 @@
 package backend.academy.handlers;
 
 import backend.academy.data.HandledArgsData;
-import backend.academy.data.LogsStatistics;
+import backend.academy.data.statistics.LogsStatistics;
 import backend.academy.data.PathsData;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsStatisticsGatherer;
@@ -51,7 +51,7 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics logsStatistics = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
+        for (ZonedDateTime zdt : logsStatistics.nativeLogsStatistics().requestsOnDate().keySet()) {
             assertTrue(!zdt.isBefore(from) && !zdt.isAfter(to));
         }
     }
@@ -67,7 +67,7 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics logsStatistics = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
+        for (ZonedDateTime zdt : logsStatistics.nativeLogsStatistics().requestsOnDate().keySet()) {
             assertFalse(zdt.isBefore(from));
         }
     }
@@ -83,7 +83,7 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics logsStatistics = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
+        for (ZonedDateTime zdt : logsStatistics.nativeLogsStatistics().requestsOnDate().keySet()) {
             assertFalse(zdt.isAfter(to));
         }
     }
@@ -101,7 +101,7 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics logsStatistics = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        assertEquals(lines, logsStatistics.requestsAmount());
+        assertEquals(lines, logsStatistics.computedLogsStatistic().requestsAmount());
     }
 
     @Test
@@ -137,9 +137,9 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        assertEquals(30, ls.requestsAmount()); // there are 30 lines in logs1.txt
-        assertEquals(30, ls.requestMethods().get("GET")); // all requests are GET
-        assertEquals(16, ls.statuses().get((short) 304)); // 16 304 statuses
+        assertEquals(30, ls.computedLogsStatistic().requestsAmount()); // there are 30 lines in logs1.txt
+        assertEquals(30, ls.nativeLogsStatistics().requestMethods().get("GET")); // all requests are GET
+        assertEquals(16, ls.nativeLogsStatistics().statuses().get((short) 304)); // 16 304 statuses
         // i've counted it by my hands
     }
 
@@ -166,6 +166,6 @@ public class NginxLogsStatisticsGathererTest {
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        assertEquals(16, ls.requestsAmount()); // there are 16 30* statuses
+        assertEquals(16, ls.computedLogsStatistic().requestsAmount()); // there are 16 30* statuses
     }
 }

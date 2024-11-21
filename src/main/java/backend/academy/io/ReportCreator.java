@@ -1,6 +1,8 @@
 package backend.academy.io;
 
-import backend.academy.data.LogsStatistics;
+import backend.academy.data.statistics.ComputedLogsStatistics;
+import backend.academy.data.statistics.LogsStatistics;
+import backend.academy.data.statistics.NativeLogsStatistics;
 import backend.academy.io.formatters.TextFormatter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -36,8 +38,8 @@ public class ReportCreator {
 
     public void createReport() {
         if (logsStatistics == null
-            || (logsStatistics.paths().uris().isEmpty()
-            && logsStatistics.paths().paths().isEmpty())) {
+            || (logsStatistics.nativeLogsStatistics().paths().uris().isEmpty()
+            && logsStatistics.nativeLogsStatistics().paths().paths().isEmpty())) {
             throw new IllegalArgumentException("Invalid log statistics");
         }
 
@@ -51,9 +53,11 @@ public class ReportCreator {
     }
 
     private void printRequestOnDateStatistics(LogsStatistics logsStatistics) {
+        NativeLogsStatistics statistics = logsStatistics.nativeLogsStatistics();
+
         out.println(formatter.toHeaderLine("Requests on date", DEFAULT_HEADER_LEVEL));
         out.println(formatter.toTableHeader("Date", "Amount"));
-        logsStatistics.requestsOnDate().entrySet().stream()
+        statistics.requestsOnDate().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
             .forEach(
                 entry -> out.println(formatter.toTableRow(entry.getKey().toString(), entry.getValue().toString())));
@@ -61,18 +65,22 @@ public class ReportCreator {
     }
 
     private void printRequestMethodsStatistics(LogsStatistics logsStatistics) {
+        NativeLogsStatistics statistics = logsStatistics.nativeLogsStatistics();
+
         out.println(formatter.toHeaderLine("Request Methods", DEFAULT_HEADER_LEVEL));
         out.println(formatter.toTableHeader("Method", "Amount"));
-        logsStatistics.requestMethods().entrySet().stream()
+        statistics.requestMethods().entrySet().stream()
             .sorted(Map.Entry.comparingByValue())
             .forEach(entry -> out.println(formatter.toTableRow(entry.getKey(), entry.getValue().toString())));
         out.println(formatter.getTableFooter());
     }
 
     private void printResourceCodesStatistics(LogsStatistics logsStatistics) {
+        NativeLogsStatistics statistics = logsStatistics.nativeLogsStatistics();
+
         out.println(formatter.toHeaderLine("Response codes", DEFAULT_HEADER_LEVEL));
         out.println(formatter.toTableHeader("Code", "Name", "Amount"));
-        logsStatistics.statuses().entrySet().stream()
+        statistics.statuses().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
             .forEach(
                 e -> out.println(formatter.toTableRow(String.valueOf(e.getKey()),
@@ -84,9 +92,11 @@ public class ReportCreator {
     }
 
     private void printResourcesStatistics(LogsStatistics logsStatistics) {
+        NativeLogsStatistics statistics = logsStatistics.nativeLogsStatistics();
+
         out.println(formatter.toHeaderLine("Queried resources", DEFAULT_HEADER_LEVEL));
         out.println(formatter.toTableHeader("Resource", "Amount"));
-        logsStatistics.requestResources().entrySet().stream()
+        statistics.requestResources().entrySet().stream()
             .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
             .forEach(
                 e -> out.println(formatter.toTableRow(formatter.toMonospaced(e.getKey()), e.getValue().toString())));
@@ -94,11 +104,14 @@ public class ReportCreator {
     }
 
     private void printGeneralStatistics(LogsStatistics logsStatistics) {
+        NativeLogsStatistics nativeStatistics = logsStatistics.nativeLogsStatistics();
+        ComputedLogsStatistics computedStatistics = logsStatistics.computedLogsStatistic();
+
         out.println(formatter.toHeaderLine("General information", DEFAULT_HEADER_LEVEL));
         out.println(formatter.toTableHeader("Metric", "Value"));
 
-        Stream<String> urisStream = logsStatistics.paths().uris().stream().map(URI::toString);
-        Stream<String> pathsStream = logsStatistics.paths().paths().stream().map(Path::toString);
+        Stream<String> urisStream = nativeStatistics.paths().uris().stream().map(URI::toString);
+        Stream<String> pathsStream = nativeStatistics.paths().paths().stream().map(Path::toString);
         List<String> pathsList = Stream.concat(urisStream, pathsStream).toList();
 
         out.println(formatter.toTableRow("Files", formatter.toMonospaced(pathsList.getFirst())));
@@ -107,13 +120,13 @@ public class ReportCreator {
         }
 
         out.println(formatter.toTableRow("Start date",
-            logsStatistics.from() == null ? "-" : logsStatistics.from().toString()));
+            nativeStatistics.from() == null ? "-" : nativeStatistics.from().toString()));
         out.println(formatter.toTableRow("End date",
-            logsStatistics.to() == null ? "-" : logsStatistics.to().toString()));
+            nativeStatistics.to() == null ? "-" : nativeStatistics.to().toString()));
 
-        out.println(formatter.toTableRow("Number of requests", String.valueOf(logsStatistics.requestsAmount())));
-        out.println(formatter.toTableRow("Average response size", String.valueOf(logsStatistics.averageBytesSent())));
-        out.println(formatter.toTableRow("95p response size", String.valueOf(logsStatistics.p95BytesSent())));
+        out.println(formatter.toTableRow("Number of requests", String.valueOf(computedStatistics.requestsAmount())));
+        out.println(formatter.toTableRow("Average response size", String.valueOf(computedStatistics.averageBytesSent())));
+        out.println(formatter.toTableRow("95p response size", String.valueOf(computedStatistics.p95BytesSent())));
         out.println(formatter.getTableFooter());
     }
 }
