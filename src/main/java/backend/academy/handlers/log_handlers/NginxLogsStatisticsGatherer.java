@@ -13,15 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.SneakyThrows;
-import lombok.extern.java.Log;
 
 public class NginxLogsStatisticsGatherer {
     private static final double THE_95_TH_PERCENTILE = 0.95;
@@ -150,9 +147,9 @@ public class NginxLogsStatisticsGatherer {
 
     private Predicate<LogData> buildDateTimePredicate(ZonedDateTime from, ZonedDateTime to) {
         return it -> {
-           boolean before = Optional.ofNullable(from).map(it.timeLocal()::isBefore).orElse(false);
-           boolean after = Optional.ofNullable(to).map(it.timeLocal()::isAfter).orElse(false);
-           return !before && !after;
+            boolean before = Optional.ofNullable(from).map(it.timeLocal()::isBefore).orElse(false);
+            boolean after = Optional.ofNullable(to).map(it.timeLocal()::isAfter).orElse(false);
+            return !before && !after;
         };
     }
 
@@ -174,7 +171,7 @@ public class NginxLogsStatisticsGatherer {
             default -> throw new IllegalArgumentException("Unknown filter field: " + filterField);
         };
 
-            return it -> filterValueRegex.matcher(method.apply(it)).matches();
+        return it -> filterValueRegex.matcher(method.apply(it)).matches();
     }
 
     private void initPredicates(ZonedDateTime from, ZonedDateTime to, String filterField, Pattern filterValueRegex) {
