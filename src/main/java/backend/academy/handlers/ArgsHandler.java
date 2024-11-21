@@ -1,10 +1,12 @@
 package backend.academy.handlers;
 
-import backend.academy.data.ArgsData;
+import backend.academy.data.Args;
+import backend.academy.data.HandledArgsData;
 import backend.academy.data.PathsData;
-import backend.academy.io.formatters.ADocFormatter;
+import backend.academy.io.formatters.Format;
 import backend.academy.io.formatters.MarkdownFormatter;
 import backend.academy.io.formatters.TextFormatter;
+import com.beust.jcommander.JCommander;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.URI;
 import java.nio.file.FileSystems;
@@ -17,54 +19,46 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import lombok.SneakyThrows;
 
 @SuppressFBWarnings // suppress warnings concerned with user file paths input
 public class ArgsHandler {
-    public static final String PATH_ARG = "--path";
-    public static final String FROM_ARG = "--from";
-    public static final String TO_ARG = "--to";
-    public static final String FORMAT_ARG = "--format";
-    public static final String FILTER_FIELD_ARG = "--filter-field";
-    public static final String FILTER_VALUE_ARG = "--filter-value";
-    public static final String MARKDOWN_FORMAT_NAME = "markdown";
-    public static final String ADOC_FORMAT_NAME = "adoc";
+    private static final Set<Character> SPECIAL_SYMBOLS = new HashSet<>();
+
+    static {
+        SPECIAL_SYMBOLS.add('*');
+        SPECIAL_SYMBOLS.add('?');
+        SPECIAL_SYMBOLS.add('{');
+        SPECIAL_SYMBOLS.add('[');
+    }
 
     private final String[] args;
-    private final List<Path> paths = new ArrayList<>();
-    private final List<URI> uris = new ArrayList<>();
-    private ZonedDateTime from;
-    private ZonedDateTime to;
-    private TextFormatter format;
-    private String filterField;
-    private Pattern filterValuePattern;
 
     public ArgsHandler(String[] args) {
         this.args = args;
     }
 
     @SuppressWarnings({"checkstyle:ModifiedControlVariable", "checkstyle:CyclomaticComplexity"})
-    public ArgsData handle() {
-        // the loop iterates through parameters ignoring args.
-        // if it meets parameter on its way, an exception will be thrown
-        for (int i = 0; i < args.length; ++i) {
-            if (isParameter(args[i])) {
-                i = switch (args[i]) {
-                    case PATH_ARG -> getPaths(i);
-                    case FROM_ARG -> getFromTime(i);
-                    case TO_ARG -> getToTime(i);
-                    case FORMAT_ARG -> getFormat(i);
-                    case FILTER_FIELD_ARG -> getFilterField(i);
-                    case FILTER_VALUE_ARG -> getFilterValuePattern(i);
-                    default -> throw new IllegalArgumentException("Unknown argument: " + args[i]);
-                };
-            } else {
-                throw new IllegalArgumentException("Excepted argument on argument position " + i);
-            }
-        }
-        if (paths.isEmpty() && uris.isEmpty()) {
+    public HandledArgsData handle() {
+        Args parsedArgs = new Args();
+        JCommander.newBuilder()
+            .addObject(parsedArgs)
+            .build()
+            .parse(args);
+
+        PathsData handledPaths = handlePaths(parsedArgs.paths());
+        ZonedDateTime handledFrom = returnNullOrResult(parsedArgs.from(), ZonedDateTime::parse);
+        ZonedDateTime handledTo = returnNullOrResult(parsedArgs.to(), ZonedDateTime::parse);
+        TextFormatter formatter = getFormatter(parsedArgs.format());
+        String filterField = returnNullOrResult(parsedArgs.filterField(), it -> it);
+        Pattern filterValuePattern = returnNullOrResult(parsedArgs.filterValue(), Pattern::compile);
+
+        if (handledPaths.paths().isEmpty() && handledPaths.uris().isEmpty()) {
             throw new IllegalArgumentException("Missing paths");
         }
         if (filterField != null && filterValuePattern == null) {
@@ -73,49 +67,49 @@ public class ArgsHandler {
         if (filterField == null && filterValuePattern != null) {
             throw new IllegalArgumentException("Excepted filter field");
         }
-        if (from != null && to != null) {
-            if (from.isAfter(to)) {
+        if (handledFrom != null && handledTo != null) {
+            if (handledFrom.isAfter(handledTo)) {
                 throw new IllegalArgumentException("From date is after To date");
             }
-            if (to.isBefore(from)) {
+            if (handledTo.isBefore(handledFrom)) {
                 throw new IllegalArgumentException("To date is before From date");
+
             }
         }
-        if (format == null) {
-            format = new MarkdownFormatter();
-        }
 
-        return ArgsData.builder()
-            .paths(new PathsData(uris, paths))
-            .from(from)
-            .to(to)
-            .format(format)
+        return HandledArgsData.builder()
+            .paths(handledPaths)
+            .from(handledFrom)
+            .to(handledTo)
+            .format(formatter)
             .filterField(filterField)
             .filterValuePattern(filterValuePattern)
             .build();
     }
 
     @SneakyThrows
-    public int getPaths(int pos) {
-        int newPos = pos + 1;
-        // loop starts from arg parameters
-        for (; newPos < args.length; ++newPos) {
-            String currentArg = args[newPos];
-            // end loop if another arg
-            if (isParameter(currentArg)) {
-                break;
-            }
+    public PathsData handlePaths(List<String> parsedPaths) {
+        List<URI> uris = new ArrayList<>();
+        List<Path> paths = new ArrayList<>();
 
-            if (currentArg.matches("^(http|https|ftp|file)://.*")) {
-                uris.add(URI.create(currentArg));
+        for (var currentPath : parsedPaths) {
+            if (currentPath.matches("^(http|https|ftp|file)://.*")) {
+                uris.add(URI.create(currentPath));
             } else {
                 // if path doesn't contain any glob symbols
                 // that mean we deal with a single file
-                if (findFirstGlobSymbolIndex(currentArg) == -1) {
-                    paths.add(Paths.get(currentArg));
+                if (findFirstGlobSymbolIndex(currentPath) == -1) {
+                    paths.add(Paths.get(currentPath));
                 } else {
-                    Path rootDir = extractRootDir(currentArg);
-                    String pattern = extractPattern(currentArg);
+                    // find the root dir that will be the root
+                    // of file tree that we'll walk through
+                    Path rootDir = extractRootDir(currentPath);
+                    // extract the glob pattern of filepath that we
+                    // are searching to
+                    String pattern = extractPattern(currentPath);
+                    // now walk through our file tree, visit all the
+                    // files on the way and check if they match
+                    // the pattern
                     Files.walkFileTree(rootDir, new SimpleFileVisitor<>() {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
@@ -131,68 +125,30 @@ public class ArgsHandler {
                 }
             }
         }
-        return newPos - 1; // returns pos of the last arg
+        return new PathsData(uris, paths);
     }
 
-    public int getFromTime(int pos) {
-        int newPos = pos + 1;
-        if (newPos < args.length && !isParameter(args[newPos])) {
-            from = ZonedDateTime.parse(args[newPos]);
-        } else {
-            throw new IllegalArgumentException("Excepted date after --from on argument position " + newPos);
+    private TextFormatter getFormatter(String formatString) {
+        if (formatString == null) {
+            return new MarkdownFormatter();
         }
 
-        return newPos;
+        Format[] availableFormats = Format.values();
+        for (Format currentFormat : availableFormats) {
+            if (currentFormat.format().equalsIgnoreCase(formatString)) {
+                return currentFormat.formatter();
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown format: " + formatString);
     }
 
-    public int getToTime(int pos) {
-        int newPos = pos + 1;
-        if (newPos < args.length && !isParameter(args[newPos])) {
-            to = ZonedDateTime.parse(args[newPos]);
-        } else {
-            throw new IllegalArgumentException("Excepted date after --to on argument position " + newPos);
+    private <T, R> R returnNullOrResult(T object, Function<T, R> function) {
+        if (object == null) {
+            return null;
         }
 
-        return newPos;
-    }
-
-    public int getFormat(int pos) {
-        int newPos = pos + 1;
-        if (newPos < args.length && !isParameter(args[newPos])) {
-            format = switch (args[newPos]) {
-                case MARKDOWN_FORMAT_NAME -> new MarkdownFormatter();
-                case ADOC_FORMAT_NAME -> new ADocFormatter();
-                default -> throw new IllegalArgumentException("Unsupported format: " + args[newPos]);
-            };
-        } else {
-            throw new IllegalArgumentException("Excepted format after --format on argument position " + newPos);
-        }
-
-        return newPos;
-    }
-
-    public int getFilterField(int pos) {
-        int newPos = pos + 1;
-        if (newPos < args.length && !isParameter(args[newPos])) {
-            filterField = args[newPos];
-        } else {
-            throw new IllegalArgumentException(
-                "Excepted filter field after --filter-field on argument position " + newPos);
-        }
-
-        return newPos;
-    }
-
-    public int getFilterValuePattern(int pos) {
-        int newPos = pos + 1;
-        if (newPos < args.length && !isParameter(args[newPos])) {
-            filterValuePattern = Pattern.compile(args[newPos]);
-        } else {
-            throw new IllegalArgumentException(
-                "Excepted filter value after --filter-value on argument position " + newPos);
-        }
-
-        return newPos;
+        return function.apply(object);
     }
 
     private Path extractRootDir(String pathString) {
@@ -248,16 +204,12 @@ public class ArgsHandler {
         int specialSymbolIndex = -1;
         for (int i = 0; i != pathString.length(); ++i) {
             char ch = pathString.charAt(i);
-            if (ch == '*' || ch == '?' || ch == '[' || ch == '{') {
+            if (SPECIAL_SYMBOLS.contains(ch)) {
                 specialSymbolIndex = i;
                 break;
             }
         }
 
         return specialSymbolIndex;
-    }
-
-    private boolean isParameter(String arg) {
-        return arg.matches("^--.*");
     }
 }

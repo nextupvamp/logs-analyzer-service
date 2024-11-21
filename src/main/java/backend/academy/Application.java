@@ -1,6 +1,6 @@
 package backend.academy;
 
-import backend.academy.data.ArgsData;
+import backend.academy.data.HandledArgsData;
 import backend.academy.handlers.ArgsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsStatisticsGatherer;
@@ -24,18 +24,18 @@ public class Application {
     @SuppressFBWarnings // suppress warnings concerned with file user input
     public static void main(String[] args) {
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
+        HandledArgsData handledArgsData = argsHandler.handle();
 
         NginxLogsStatisticsGatherer statisticsGatherer = NginxLogsStatisticsGatherer.builder()
-            .paths(argsData.paths())
-            .from(argsData.from())
-            .to(argsData.to())
-            .filterField(argsData.filterField())
-            .filterValuePattern(argsData.filterValuePattern())
+            .paths(handledArgsData.paths())
+            .from(handledArgsData.from())
+            .to(handledArgsData.to())
+            .filterField(handledArgsData.filterField())
+            .filterValuePattern(handledArgsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
 
-        String fileFormat = argsData.format().getFileFormat();
+        String fileFormat = handledArgsData.format().getFileFormat();
         Properties properties = new Properties();
         properties.load(Application.class.getClassLoader().getResourceAsStream("application.property"));
         Path reportFile = Paths.get(
@@ -43,6 +43,6 @@ public class Application {
                 + fileFormat);
 
         PrintStream printStream = new PrintStream(Files.newOutputStream(reportFile), true, StandardCharsets.UTF_8);
-        ReportCreator.createReport(statisticsGatherer.gatherStatistics(), argsData.format(), printStream);
+        ReportCreator.createReport(statisticsGatherer.gatherStatistics(), handledArgsData.format(), printStream);
     }
 }

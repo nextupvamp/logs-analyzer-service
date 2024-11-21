@@ -1,6 +1,6 @@
 package backend.academy.io;
 
-import backend.academy.data.ArgsData;
+import backend.academy.data.HandledArgsData;
 import backend.academy.data.LogsStatistics;
 import backend.academy.handlers.ArgsHandler;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
@@ -29,18 +29,18 @@ public class ReportCreatorTest {
         };
 
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
+        HandledArgsData handledArgsData = argsHandler.handle();
         NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
-            .paths(argsData.paths())
-            .from(argsData.from())
-            .to(argsData.to())
-            .filterField(argsData.filterField())
-            .filterValuePattern(argsData.filterValuePattern())
+            .paths(handledArgsData.paths())
+            .from(handledArgsData.from())
+            .to(handledArgsData.to())
+            .filterField(handledArgsData.filterField())
+            .filterValuePattern(handledArgsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);
+        ReportCreator.createReport(ls, handledArgsData.format(), BAOSPrintStream);
 
         String report = BAOS.toString();
         BufferedReader br = new BufferedReader(
@@ -63,18 +63,18 @@ public class ReportCreatorTest {
         };
 
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
+        HandledArgsData handledArgsData = argsHandler.handle();
         NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
-            .paths(argsData.paths())
-            .from(argsData.from())
-            .to(argsData.to())
-            .filterField(argsData.filterField())
-            .filterValuePattern(argsData.filterValuePattern())
+            .paths(handledArgsData.paths())
+            .from(handledArgsData.from())
+            .to(handledArgsData.to())
+            .filterField(handledArgsData.filterField())
+            .filterValuePattern(handledArgsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
 
-        ReportCreator.createReport(ls, argsData.format(), BAOSPrintStream);
+        ReportCreator.createReport(ls, handledArgsData.format(), BAOSPrintStream);
 
         String report = BAOS.toString();
         BufferedReader br = new BufferedReader(

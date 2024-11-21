@@ -1,6 +1,6 @@
 package backend.academy.handlers;
 
-import backend.academy.data.ArgsData;
+import backend.academy.data.HandledArgsData;
 import backend.academy.data.LogsStatistics;
 import backend.academy.data.PathsData;
 import backend.academy.handlers.log_handlers.NginxLogsHandler;
@@ -126,13 +126,13 @@ public class NginxLogsStatisticsGathererTest {
             LogsReaderTest.TEST_DIR_PATH + LogsReaderTest.SEPARATOR + "logs1.txt"
         };
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
+        HandledArgsData handledArgsData = argsHandler.handle();
         NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
-            .paths(argsData.paths())
-            .from(argsData.from())
-            .to(argsData.to())
-            .filterField(argsData.filterField())
-            .filterValuePattern(argsData.filterValuePattern())
+            .paths(handledArgsData.paths())
+            .from(handledArgsData.from())
+            .to(handledArgsData.to())
+            .filterField(handledArgsData.filterField())
+            .filterValuePattern(handledArgsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();
@@ -155,13 +155,13 @@ public class NginxLogsStatisticsGathererTest {
         };
 
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
+        HandledArgsData handledArgsData = argsHandler.handle();
         NginxLogsStatisticsGatherer nginxLogsStatisticsGatherer = NginxLogsStatisticsGatherer.builder()
-            .paths(argsData.paths())
-            .from(argsData.from())
-            .to(argsData.to())
-            .filterField(argsData.filterField())
-            .filterValuePattern(argsData.filterValuePattern())
+            .paths(handledArgsData.paths())
+            .from(handledArgsData.from())
+            .to(handledArgsData.to())
+            .filterField(handledArgsData.filterField())
+            .filterValuePattern(handledArgsData.filterValuePattern())
             .logsHandler(new NginxLogsHandler())
             .build();
         LogsStatistics ls = nginxLogsStatisticsGatherer.gatherStatistics();

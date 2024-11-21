@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import lombok.Builder;
 
 @Builder
-public record ArgsData(
+public record HandledArgsData(
     PathsData paths,
     ZonedDateTime from,
     ZonedDateTime to,

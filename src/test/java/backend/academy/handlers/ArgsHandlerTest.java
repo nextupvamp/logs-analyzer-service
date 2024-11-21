@@ -1,6 +1,6 @@
 package backend.academy.handlers;
 
-import backend.academy.data.ArgsData;
+import backend.academy.data.HandledArgsData;
 import backend.academy.data.PathsData;
 import java.net.URI;
 import java.nio.file.Path;
@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import com.beust.jcommander.ParameterException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -182,8 +183,8 @@ public class ArgsHandlerTest {
             regex
         };
         ArgsHandler argsHandler = new ArgsHandler(args);
-        ArgsData argsData = argsHandler.handle();
-        Pattern pattern = argsData.filterValuePattern();
+        HandledArgsData handledArgsData = argsHandler.handle();
+        Pattern pattern = handledArgsData.filterValuePattern();
         Matcher matcher = pattern.matcher(value);
 
         assertTrue(matcher.matches());
@@ -200,6 +201,6 @@ public class ArgsHandlerTest {
     public void testWrongParameters(String input) {
         String[] args = input.split(",");
         ArgsHandler argsHandler = new ArgsHandler(args);
-        assertThrows(IllegalArgumentException.class, argsHandler::handle);
+        assertThrows(ParameterException.class, argsHandler::handle);
     }
 }
