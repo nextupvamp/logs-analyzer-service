@@ -23,12 +23,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.SneakyThrows;
 
 @SuppressFBWarnings // suppress warnings concerned with user file paths input
 public class ArgsHandler {
     private static final Set<Character> SPECIAL_SYMBOLS = new HashSet<>();
+    private static final Pattern URI_PATTERN = Pattern.compile("^(http|https|ftp|file)://.*");
 
     static {
         SPECIAL_SYMBOLS.add('*');
@@ -95,7 +97,8 @@ public class ArgsHandler {
         List<Path> paths = new ArrayList<>();
 
         for (var currentPath : parsedPaths) {
-            if (currentPath.matches("^(http|https|ftp|file)://.*")) {
+            Matcher matcher = URI_PATTERN.matcher(currentPath);
+            if (matcher.matches()) {
                 uris.add(URI.create(currentPath));
             } else {
                 // if path doesn't contain any glob symbols
