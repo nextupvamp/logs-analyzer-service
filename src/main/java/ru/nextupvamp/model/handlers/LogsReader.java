@@ -1,7 +1,6 @@
-package ru.nextupvamp.io;
+package ru.nextupvamp.model.handlers;
 
-import ru.nextupvamp.data.LogData;
-import ru.nextupvamp.handlers.log_handlers.NginxLogsHandler;
+import ru.nextupvamp.model.data.LogData;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;

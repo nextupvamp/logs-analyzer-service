@@ -1,12 +1,14 @@
-package ru.nextupvamp.handlers.log_handlers;
+package ru.nextupvamp.model.handlers;
 
-import ru.nextupvamp.data.LogData;
+import org.springframework.stereotype.Component;
+import ru.nextupvamp.model.data.LogData;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class NginxLogsHandler {
     private static final Pattern LOG_PATTERN = Pattern.compile("(?<address>\\S+) - (?<user>\\S+) \\[(?<time>.*)] "
         + "\"(?<method>GET|POST|HEAD|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?<resource>\\S+) "

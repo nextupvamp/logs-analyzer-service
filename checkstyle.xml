@@ -146,7 +146,7 @@
         <module name="AvoidStarImport"/>
         <!-- <module name="AvoidStaticImport"/> -->
         <!-- <module name="CustomImportOrder"/> -->
-        <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
+        <module name="IllegalImport"/> <!-- defaults toTime sun.* packages -->
         <!-- <module name="ImportControl"/> -->
         <module name="ImportOrder">
             <property name="option" value="under"/>
