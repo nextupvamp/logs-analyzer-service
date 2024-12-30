@@ -41,13 +41,12 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
 
     @SneakyThrows
     public LogsStatistics gatherStatisticsFromUri(URI uri, Filters filters) {
-        try (LogsReader logsReader = new LogsReader()) {
-            if (uri != null) {
-                return gatherData(logsReader.readFromUriAsStream(uri, logsHandler), filters);
-            }
+        if (uri == null) {
+            throw new IllegalArgumentException();
         }
-
-        throw new IllegalArgumentException();
+        try (LogsReader logsReader = new LogsReader()) {
+            return gatherData(logsReader.readFromUriAsStream(uri, logsHandler), filters);
+        }
     }
 
     private LogsStatistics gatherData(Stream<LogData> logDataStream, Filters filters) {
@@ -59,14 +58,13 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         Map<Short, Integer> statuses = new HashMap<>();
         AtomicInteger requestsAmount = new AtomicInteger(0);
         Map<ZonedDateTime, Integer> requestsOnDate = new HashMap<>();
-        FilterPredicates filterPredicates =
-            initPredicates(filters.fromTime(), filters.toTime(), filters.filterField(),
-                Pattern.compile(filters.filterValueRegex()));
+
+        FilterPredicates filterPredicates = initPredicates(filters.fromTime(), filters.toTime(), filters.filterField(),
+            filters.filterValueRegex());
         Predicate<LogData> dateTimePredicate = filterPredicates.dateTimePredicate();
         Predicate<LogData> fieldFilterPredicate = filterPredicates.fieldFilterPredicate();
 
-        logDataStream
-            .filter(dateTimePredicate)
+        logDataStream.filter(dateTimePredicate)
             .filter(fieldFilterPredicate)
             .peek(ignored -> requestsAmount.incrementAndGet())
             .forEach(it -> {
@@ -143,10 +141,14 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         ZonedDateTime from,
         ZonedDateTime to,
         String filterField,
-        Pattern filterValueRegex
+        String filterValueRegex
     ) {
+        Pattern filterValuePattern = null;
+        if (filterValueRegex != null && !filterValueRegex.isEmpty()) {
+            filterValuePattern = Pattern.compile(filterValueRegex);
+        }
         var dateTimePredicate = buildDateTimePredicate(from, to);
-        var fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValueRegex);
+        var fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValuePattern);
         return new FilterPredicates(dateTimePredicate, fieldFilterPredicate);
     }
 }

@@ -31,16 +31,28 @@ public class LogsAnalyzerService {
         };
     }
 
-    public LogsStatistics getStatisticsFromFile(Resource resource) {
+    private LogsStatistics getStatisticsFromFile(Resource resource) {
         var file = Path.of(resource.path());
-        var statistics =  logsStatisticsGatherer.gatherStatisticsFromFile(file, resource.filters());
+
+        Filters filters = resource.filters();
+        if (filters == null) {
+            filters = Filters.EMPTY;
+        }
+
+        var statistics =  logsStatisticsGatherer.gatherStatisticsFromFile(file, filters);
         resourceRepository.delete(resource);
         return statistics;
     }
 
-    public LogsStatistics getStatisticsFromUri(Resource resource) {
+    private LogsStatistics getStatisticsFromUri(Resource resource) {
         var uri = URI.create(resource.path());
-        var statistics = logsStatisticsGatherer.gatherStatisticsFromUri(uri, resource.filters());
+
+        Filters filters = resource.filters();
+        if (filters == null) {
+            filters = Filters.EMPTY;
+        }
+
+        var statistics = logsStatisticsGatherer.gatherStatisticsFromUri(uri, filters);
         resourceRepository.delete(resource);
         return statistics;
     }
