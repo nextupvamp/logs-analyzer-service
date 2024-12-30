@@ -1,14 +1,11 @@
-package ru.nextupvamp.data.statistics;
+package ru.nextupvamp.model.data;
 
-import ru.nextupvamp.data.PathsData;
+import lombok.Builder;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import lombok.Builder;
 
 @Builder
-@SuppressWarnings("checkstyle:RecordComponentNumber")
-public record NativeLogsStatistics(
-    PathsData paths,
+public record LogsStatistics(
     Map<String, Integer> remoteAddresses,
     Map<String, Integer> remoteUsers,
     ZonedDateTime from,
@@ -16,7 +13,9 @@ public record NativeLogsStatistics(
     Map<ZonedDateTime, Integer> requestsOnDate,
     Map<String, Integer> requestMethods,
     Map<String, Integer> requestResources,
-    Map<Short, Integer> statuses
+    Map<Short, Integer> statuses,
+    int requestsAmount,
+    long averageBytesSent,
+    long p95BytesSent
 ) {
-
 }

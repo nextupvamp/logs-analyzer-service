@@ -1,4 +1,4 @@
-package ru.nextupvamp.data;
+package ru.nextupvamp.model.data;
 
 import java.time.ZonedDateTime;
 import lombok.Builder;
