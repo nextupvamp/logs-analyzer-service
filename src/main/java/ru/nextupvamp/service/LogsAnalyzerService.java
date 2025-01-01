@@ -2,7 +2,9 @@ package ru.nextupvamp.service;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,12 +79,39 @@ public class LogsAnalyzerService {
     }
 
     public void uploadFilters(int id, Filters filters) {
+        validateFilters(filters);
         var resource = resourceRepository.findById(id).orElseThrow();
         resource.filters(filters);
         resourceRepository.save(resource);
     }
 
+    private void validateFilters(Filters filters) {
+        if (filters == null) {
+            throw new IllegalArgumentException("Filters is null");
+        }
+
+        ZonedDateTime from = filters.fromTime();
+        ZonedDateTime to = filters.toTime();
+        String filterField = filters.filterField();
+        String filterValueRegex = filters.filterValueRegex();
+
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("From time must not be after to time");
+        }
+        if (filterField == null && filterValueRegex != null) {
+            throw new IllegalArgumentException("Missing filter field");
+        }
+        if (filterField != null && filterValueRegex == null) {
+            throw new IllegalArgumentException("Missing filter value regex");
+        }
+    }
+
     private String getFreeName() {
-        return userFilesDirectory + "logs" + System.currentTimeMillis() + ".txt";
+        String fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + ".txt";
+        int i = 0;
+        while (Files.exists(Path.of(fileName))) {
+            fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + (++i) + ".txt";
+        }
+        return fileName;
     }
 }

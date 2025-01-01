@@ -30,19 +30,18 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
 
     @SneakyThrows
     public LogsStatistics gatherStatisticsFromFile(Path file, Filters filters) {
-        try (LogsReader logsReader = new LogsReader()) {
-            if (file != null && Files.exists(file)) {
-                return gatherData(logsReader.readFromFileAsStream(file, logsHandler), filters);
-            }
+        if (file == null || Files.notExists(file)) {
+            throw new IllegalArgumentException("File does not exist");
         }
-
-        throw new IllegalArgumentException();
+        try (LogsReader logsReader = new LogsReader()) {
+            return gatherData(logsReader.readFromFileAsStream(file, logsHandler), filters);
+        }
     }
 
     @SneakyThrows
     public LogsStatistics gatherStatisticsFromUri(URI uri, Filters filters) {
         if (uri == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("URI is null");
         }
         try (LogsReader logsReader = new LogsReader()) {
             return gatherData(logsReader.readFromUriAsStream(uri, logsHandler), filters);
@@ -99,7 +98,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
             .build();
     }
 
-    public static long countAverageBytesSent(List<Long> bytesSent) {
+    private long countAverageBytesSent(List<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
@@ -107,13 +106,28 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         return bytesSent.stream().reduce(0L, Long::sum) / bytesSent.size();
     }
 
-    public static long count95pBytesSent(List<Long> bytesSent) {
+    private long count95pBytesSent(List<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
         bytesSent.sort(Long::compareTo);
 
         return bytesSent.get((int) (bytesSent.size() * THE_95_TH_PERCENTILE));
+    }
+
+    private FilterPredicates initPredicates(
+        ZonedDateTime from,
+        ZonedDateTime to,
+        String filterField,
+        String filterValueRegex
+    ) {
+        Pattern filterValuePattern = null;
+        if (filterValueRegex != null && !filterValueRegex.isEmpty()) {
+            filterValuePattern = Pattern.compile(filterValueRegex);
+        }
+        var dateTimePredicate = buildDateTimePredicate(from, to);
+        var fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValuePattern);
+        return new FilterPredicates(dateTimePredicate, fieldFilterPredicate);
     }
 
     private Predicate<LogData> buildDateTimePredicate(ZonedDateTime from, ZonedDateTime to) {
@@ -142,21 +156,6 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         };
 
         return it -> filterValueRegex.matcher(method.apply(it)).matches();
-    }
-
-    private FilterPredicates initPredicates(
-        ZonedDateTime from,
-        ZonedDateTime to,
-        String filterField,
-        String filterValueRegex
-    ) {
-        Pattern filterValuePattern = null;
-        if (filterValueRegex != null && !filterValueRegex.isEmpty()) {
-            filterValuePattern = Pattern.compile(filterValueRegex);
-        }
-        var dateTimePredicate = buildDateTimePredicate(from, to);
-        var fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValuePattern);
-        return new FilterPredicates(dateTimePredicate, fieldFilterPredicate);
     }
 }
 

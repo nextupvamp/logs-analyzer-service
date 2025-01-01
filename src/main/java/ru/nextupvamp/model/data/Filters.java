@@ -10,5 +10,5 @@ public record Filters(
     String filterField,
     String filterValueRegex
 ) {
-    public static final Filters EMPTY = new Filters(null, null, null, null);
+    public static final Filters EMPTY = Filters.builder().build();
 }
