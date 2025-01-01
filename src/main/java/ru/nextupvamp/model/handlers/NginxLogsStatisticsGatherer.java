@@ -5,10 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -51,14 +51,14 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
 
     private LogsStatistics gatherData(Stream<LogData> logDataStream, Filters filters) {
         List<Long> bytesSent = new ArrayList<>();
-        Map<String, Integer> remoteAddresses = new HashMap<>();
-        Map<String, Integer> remoteUsers = new HashMap<>();
-        Map<String, Integer> requestMethods = new HashMap<>();
-        Map<String, Integer> requestResources = new HashMap<>();
-        Map<Short, Integer> statuses = new HashMap<>();
+        Map<String, Integer> remoteAddresses = new ConcurrentHashMap<>();
+        Map<String, Integer> remoteUsers = new ConcurrentHashMap<>();
+        Map<String, Integer> requestMethods = new ConcurrentHashMap<>();
+        Map<String, Integer> requestResources = new ConcurrentHashMap<>();
+        Map<Short, Integer> statuses = new ConcurrentHashMap<>();
         AtomicInteger requestsAmount = new AtomicInteger(0);
         AtomicInteger ignoredRows = new AtomicInteger(0);
-        Map<ZonedDateTime, Integer> requestsOnDate = new HashMap<>();
+        Map<ZonedDateTime, Integer> requestsOnDate = new ConcurrentHashMap<>();
 
         FilterPredicates filterPredicates = initPredicates(filters.fromTime(), filters.toTime(), filters.filterField(),
             filters.filterValueRegex());
@@ -66,6 +66,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         Predicate<LogData> fieldFilterPredicate = filterPredicates.fieldFilterPredicate();
 
         logDataStream.filter(dateTimePredicate)
+            .parallel()
             .filter(fieldFilterPredicate)
             .forEach(it -> {
                 if (it == LogData.IGNORED) {
