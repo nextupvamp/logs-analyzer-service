@@ -57,6 +57,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         Map<String, Integer> requestResources = new HashMap<>();
         Map<Short, Integer> statuses = new HashMap<>();
         AtomicInteger requestsAmount = new AtomicInteger(0);
+        AtomicInteger ignoredRows = new AtomicInteger(0);
         Map<ZonedDateTime, Integer> requestsOnDate = new HashMap<>();
 
         FilterPredicates filterPredicates = initPredicates(filters.fromTime(), filters.toTime(), filters.filterField(),
@@ -66,18 +67,23 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
 
         logDataStream.filter(dateTimePredicate)
             .filter(fieldFilterPredicate)
-            .peek(ignored -> requestsAmount.incrementAndGet())
             .forEach(it -> {
-                bytesSent.add(it.bytesSent());
-                remoteAddresses.merge(it.remoteAddress(), 1, Integer::sum);
-                remoteUsers.merge(it.remoteUser(), 1, Integer::sum);
-                requestMethods.merge(it.requestMethod(), 1, Integer::sum);
-                requestResources.merge(it.requestResource(), 1, Integer::sum);
-                statuses.merge(it.status(), 1, Integer::sum);
-                requestsOnDate.merge(it.timeLocal(), 1, Integer::sum);
+                if (it == LogData.IGNORED) {
+                    ignoredRows.incrementAndGet();
+                } else {
+                    requestsAmount.incrementAndGet();
+                    bytesSent.add(it.bytesSent());
+                    remoteAddresses.merge(it.remoteAddress(), 1, Integer::sum);
+                    remoteUsers.merge(it.remoteUser(), 1, Integer::sum);
+                    requestMethods.merge(it.requestMethod(), 1, Integer::sum);
+                    requestResources.merge(it.requestResource(), 1, Integer::sum);
+                    statuses.merge(it.status(), 1, Integer::sum);
+                    requestsOnDate.merge(it.timeLocal(), 1, Integer::sum);
+                }
             });
 
         return LogsStatistics.builder()
+            .ignoredRows(ignoredRows.get())
             .remoteAddresses(remoteAddresses)
             .remoteUsers(remoteUsers)
             .from(filters.fromTime())

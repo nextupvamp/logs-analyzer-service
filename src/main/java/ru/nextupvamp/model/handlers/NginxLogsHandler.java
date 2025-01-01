@@ -29,7 +29,7 @@ public class NginxLogsHandler {
     public LogData parseLogLineData(String line) {
         Matcher matcher = LOG_PATTERN.matcher(line);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid log format: " + line);
+            return LogData.IGNORED;
         }
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(LOG_DATE_FORMAT, LOG_DATE_LOCALE);

@@ -6,6 +6,7 @@ import java.util.Map;
 
 @Builder
 public record LogsStatistics(
+    int ignoredRows,
     Map<String, Integer> remoteAddresses,
     Map<String, Integer> remoteUsers,
     ZonedDateTime from,

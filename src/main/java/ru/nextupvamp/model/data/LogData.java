@@ -2,6 +2,7 @@ package ru.nextupvamp.model.data;
 
 import java.time.ZonedDateTime;
 import lombok.Builder;
+import lombok.extern.java.Log;
 
 @SuppressWarnings("checkstyle:RecordComponentNumber")
 @Builder
@@ -17,4 +18,5 @@ public record LogData(
     String httpReferer,
     String httpUserAgent
 ) {
+    public static final LogData IGNORED = LogData.builder().build();
 }
