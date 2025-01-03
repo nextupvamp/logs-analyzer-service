@@ -18,9 +18,12 @@ public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
     @Enumerated(EnumType.STRING)
     private ResourceType type;
+
     private String path;
+
     @Embedded
     private Filters filters;
 }
