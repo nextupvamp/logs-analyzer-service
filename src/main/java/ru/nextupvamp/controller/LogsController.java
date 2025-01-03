@@ -17,7 +17,7 @@ import ru.nextupvamp.service.LogsAnalyzerService;
 @RestController
 @AllArgsConstructor
 public class LogsController {
-    private final LogsAnalyzerService service;
+    private LogsAnalyzerService service;
 
     @PostMapping("/upload/file")
     public ResponseEntity<?> uploadFile(@RequestBody MultipartFile file) {
