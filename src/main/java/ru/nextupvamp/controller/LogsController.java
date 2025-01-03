@@ -1,6 +1,9 @@
 package ru.nextupvamp.controller;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,18 +22,24 @@ public class LogsController {
     // todo: add exception handling, generalize code to make it extensible, add more log types to be read
 
     @PostMapping("/upload/file")
-    public IdResponse uploadFile(@RequestBody MultipartFile file) {
-        return new IdResponse(service.uploadFile(file));
+    public ResponseEntity<?> uploadFile(@RequestBody MultipartFile file) {
+        return ResponseEntity.ok().body(getIdResponse(service.uploadFile(file)));
     }
 
     @PostMapping("/upload/url")
-    public IdResponse uploadUrl(@RequestBody UrlRequest url) {
-        return new IdResponse(service.uploadUrl(url.url()));
+    public ResponseEntity<?> uploadUrl(@RequestBody String url) {
+        return ResponseEntity.ok().body(getIdResponse(service.uploadUrl(url)));
     }
 
     @PostMapping("/upload/filters/{id}")
-    public void uploadFilters(@PathVariable int id, @RequestBody Filters filters) {
-        service.uploadFilters(id, filters);
+    public ResponseEntity<?> uploadFilters(@PathVariable int id, @RequestBody Filters filters) {
+        return ResponseEntity.ok().body(getIdResponse(service.uploadFilters(id, filters)));
+    }
+
+    private Map<String, Integer> getIdResponse(int id) {
+        Map<String, Integer> idResponse = new HashMap<>();
+        idResponse.put("id", id);
+        return idResponse;
     }
 
     @GetMapping("/statistics/{id}")

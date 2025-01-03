@@ -78,11 +78,12 @@ public class LogsAnalyzerService {
         return resource.id();
     }
 
-    public void uploadFilters(int id, Filters filters) {
+    public int uploadFilters(int id, Filters filters) {
         validateFilters(filters);
         var resource = resourceRepository.findById(id).orElseThrow();
         resource.filters(filters);
         resourceRepository.save(resource);
+        return id;
     }
 
     private void validateFilters(Filters filters) {
