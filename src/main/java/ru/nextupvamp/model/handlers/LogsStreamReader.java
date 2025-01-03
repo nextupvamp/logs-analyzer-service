@@ -14,29 +14,29 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 
-public class LogsReader implements AutoCloseable {
+public class LogsStreamReader implements AutoCloseable {
     private InputStream inputStream;
     private InputStreamReader inputStreamReader;
     private BufferedReader bufferedReader;
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @SneakyThrows
-    public Stream<LogData> readFromFileAsStream(Path file, NginxLogsHandler handler) {
+    public Stream<LogData> readFromFileAsStream(Path file, LogLineParser parser) {
         inputStream = Files.newInputStream(file);
         initReaders(inputStream);
 
-        return bufferedReader.lines().map(handler::parseLogLineData);
+        return bufferedReader.lines().map(parser::parseLine);
     }
 
     @SneakyThrows
-    public Stream<LogData> readFromUriAsStream(URI uri, NginxLogsHandler handler) {
+    public Stream<LogData> readFromUriAsStream(URI uri, LogLineParser parser) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(uri)
             .build();
         inputStream = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
         initReaders(inputStream);
 
-        return bufferedReader.lines().map(handler::parseLogLineData);
+        return bufferedReader.lines().map(parser::parseLine);
     }
 
     @Override

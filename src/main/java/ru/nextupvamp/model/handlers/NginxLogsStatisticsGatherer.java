@@ -26,15 +26,15 @@ import ru.nextupvamp.model.data.LogsStatistics;
 public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
     private static final double THE_95_TH_PERCENTILE = 0.95;
 
-    private final NginxLogsHandler logsHandler;
+    private final LogLineParser logsHandler;
 
     @SneakyThrows
     public LogsStatistics gatherStatisticsFromFile(Path file, Filters filters) {
         if (file == null || Files.notExists(file)) {
             throw new IllegalArgumentException("File does not exist");
         }
-        try (LogsReader logsReader = new LogsReader()) {
-            return gatherData(logsReader.readFromFileAsStream(file, logsHandler), filters);
+        try (LogsStreamReader logsStreamReader = new LogsStreamReader()) {
+            return gatherData(logsStreamReader.readFromFileAsStream(file, logsHandler), filters);
         }
     }
 
@@ -43,8 +43,8 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         if (uri == null) {
             throw new IllegalArgumentException("URI is null");
         }
-        try (LogsReader logsReader = new LogsReader()) {
-            return gatherData(logsReader.readFromUriAsStream(uri, logsHandler), filters);
+        try (LogsStreamReader logsStreamReader = new LogsStreamReader()) {
+            return gatherData(logsStreamReader.readFromUriAsStream(uri, logsHandler), filters);
         }
     }
 
@@ -98,7 +98,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
             .build();
     }
 
-    private long countAverageBytesSent(List<Long> bytesSent) {
+    long countAverageBytesSent(List<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
@@ -106,7 +106,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         return bytesSent.stream().reduce(0L, Long::sum) / bytesSent.size();
     }
 
-    private long count95pBytesSent(List<Long> bytesSent) {
+    long count95pBytesSent(List<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
@@ -144,14 +144,14 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         }
 
         Function<LogData, String> method = switch (filterField) {
-            case NginxLogsHandler.REMOTE_ADDRESS_GROUP -> LogData::remoteAddress;
-            case NginxLogsHandler.USER_GROUP -> LogData::remoteUser;
-            case NginxLogsHandler.METHOD_GROUP -> LogData::requestMethod;
-            case NginxLogsHandler.RESOURCE_GROUP -> LogData::requestResource;
-            case NginxLogsHandler.HTTP_GROUP -> LogData::requestHttpVersion;
-            case NginxLogsHandler.STATUS_GROUP -> it -> String.valueOf(it.status());
-            case NginxLogsHandler.REFERER_GROUP -> LogData::httpReferer;
-            case NginxLogsHandler.USER_AGENT_GROUP -> LogData::httpUserAgent;
+            case NginxLogLineParser.REMOTE_ADDRESS_GROUP -> LogData::remoteAddress;
+            case NginxLogLineParser.USER_GROUP -> LogData::remoteUser;
+            case NginxLogLineParser.METHOD_GROUP -> LogData::requestMethod;
+            case NginxLogLineParser.RESOURCE_GROUP -> LogData::requestResource;
+            case NginxLogLineParser.HTTP_GROUP -> LogData::requestHttpVersion;
+            case NginxLogLineParser.STATUS_GROUP -> it -> String.valueOf(it.status());
+            case NginxLogLineParser.REFERER_GROUP -> LogData::httpReferer;
+            case NginxLogLineParser.USER_AGENT_GROUP -> LogData::httpUserAgent;
             default -> throw new IllegalArgumentException("Unknown filter field: " + filterField);
         };
 
