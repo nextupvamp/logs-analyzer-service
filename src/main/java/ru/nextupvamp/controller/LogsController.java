@@ -17,9 +17,7 @@ import ru.nextupvamp.service.LogsAnalyzerService;
 @RestController
 @AllArgsConstructor
 public class LogsController {
-    LogsAnalyzerService service;
-
-    // todo: add exception handling, generalize code to make it extensible, add more log types to be read
+    private final LogsAnalyzerService service;
 
     @PostMapping("/upload/file")
     public ResponseEntity<?> uploadFile(@RequestBody MultipartFile file) {
