@@ -1,25 +1,23 @@
 package ru.nextupvamp.model.handlers;
 
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import ru.nextupvamp.model.data.Filters;
 import ru.nextupvamp.model.data.LogData;
 import ru.nextupvamp.model.data.LogsStatistics;
+
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -59,43 +57,42 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         AtomicInteger ignoredRows = new AtomicInteger(0);
         Map<ZonedDateTime, Integer> requestsOnDate = new ConcurrentHashMap<>();
 
-        FilterPredicates filterPredicates = initPredicates(filters.fromTime(), filters.toTime(), filters.filterField(),
-            filters.filterValueRegex());
+        FilterPredicates filterPredicates = initPredicates(filters.fromDate(), filters.toDate(), filters.filterMap());
         Predicate<LogData> dateTimePredicate = filterPredicates.dateTimePredicate();
         Predicate<LogData> fieldFilterPredicate = filterPredicates.fieldFilterPredicate();
 
         logDataStream.filter(dateTimePredicate)
-            .parallel()
-            .filter(fieldFilterPredicate)
-            .forEach(it -> {
-                if (it == LogData.IGNORED) {
-                    ignoredRows.incrementAndGet();
-                } else {
-                    requestsAmount.incrementAndGet();
-                    bytesSent.add(it.bytesSent());
-                    remoteAddresses.merge(it.remoteAddress(), 1, Integer::sum);
-                    remoteUsers.merge(it.remoteUser(), 1, Integer::sum);
-                    requestMethods.merge(it.requestMethod(), 1, Integer::sum);
-                    requestResources.merge(it.requestResource(), 1, Integer::sum);
-                    statuses.merge(it.status(), 1, Integer::sum);
-                    requestsOnDate.merge(it.timeLocal(), 1, Integer::sum);
-                }
-            });
+                .parallel()
+                .filter(fieldFilterPredicate)
+                .forEach(it -> {
+                    if (it == LogData.IGNORED) {
+                        ignoredRows.incrementAndGet();
+                    } else {
+                        requestsAmount.incrementAndGet();
+                        bytesSent.add(it.bytesSent());
+                        remoteAddresses.merge(it.remoteAddress(), 1, Integer::sum);
+                        remoteUsers.merge(it.remoteUser(), 1, Integer::sum);
+                        requestMethods.merge(it.requestMethod(), 1, Integer::sum);
+                        requestResources.merge(it.requestResource(), 1, Integer::sum);
+                        statuses.merge(it.status(), 1, Integer::sum);
+                        requestsOnDate.merge(it.timeLocal(), 1, Integer::sum);
+                    }
+                });
 
         return LogsStatistics.builder()
-            .ignoredRows(ignoredRows.get())
-            .remoteAddresses(remoteAddresses)
-            .remoteUsers(remoteUsers)
-            .from(filters.fromTime())
-            .to(filters.toTime())
-            .requestsOnDate(requestsOnDate)
-            .requestMethods(requestMethods)
-            .requestResources(requestResources)
-            .statuses(statuses)
-            .requestsAmount(requestsAmount.get())
-            .averageBytesSent(countAverageBytesSent(bytesSent))
-            .p95BytesSent(count95pBytesSent(bytesSent))
-            .build();
+                .ignoredRows(ignoredRows.get())
+                .remoteAddresses(remoteAddresses)
+                .remoteUsers(remoteUsers)
+                .from(filters.fromDate())
+                .to(filters.toDate())
+                .requestsOnDate(requestsOnDate)
+                .requestMethods(requestMethods)
+                .requestResources(requestResources)
+                .statuses(statuses)
+                .requestsAmount(requestsAmount.get())
+                .averageBytesSent(countAverageBytesSent(bytesSent))
+                .p95BytesSent(count95pBytesSent(bytesSent))
+                .build();
     }
 
     long countAverageBytesSent(List<Long> bytesSent) {
@@ -116,18 +113,24 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
     }
 
     private FilterPredicates initPredicates(
-        ZonedDateTime from,
-        ZonedDateTime to,
-        String filterField,
-        String filterValueRegex
+            ZonedDateTime from,
+            ZonedDateTime to,
+            Map<String, String> filterMap
     ) {
-        Pattern filterValuePattern = null;
-        if (filterValueRegex != null && !filterValueRegex.isEmpty()) {
-            filterValuePattern = Pattern.compile(filterValueRegex);
+        Map<String, Pattern> compiledFilterMap = new HashMap<>();
+        if (filterMap != null) {
+            filterMap.forEach((field, value) -> {
+                Pattern filterValuePattern = null;
+                if (value != null && !value.isEmpty()) {
+                    filterValuePattern = Pattern.compile(value);
+                }
+                compiledFilterMap.put(field, filterValuePattern);
+            });
         }
+
         var dateTimePredicate = buildDateTimePredicate(from, to);
-        var fieldFilterPredicate = buildFieldFilterPredicate(filterField, filterValuePattern);
-        return new FilterPredicates(dateTimePredicate, fieldFilterPredicate);
+        var fieldFilterPredicates = buildFieldFilterPredicate(compiledFilterMap);
+        return new FilterPredicates(dateTimePredicate, fieldFilterPredicates);
     }
 
     private Predicate<LogData> buildDateTimePredicate(ZonedDateTime from, ZonedDateTime to) {
@@ -138,24 +141,31 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         };
     }
 
-    private Predicate<LogData> buildFieldFilterPredicate(String filterField, Pattern filterValueRegex) {
-        if (filterField == null || filterValueRegex == null) {
-            return ignored -> true;
-        }
+    private Predicate<LogData> buildFieldFilterPredicate(Map<String, Pattern> compiledFilterMap) {
+        List<Predicate<LogData>> predicateList = new ArrayList<>();
 
-        Function<LogData, String> method = switch (filterField) {
-            case NginxLogLineParser.REMOTE_ADDRESS_GROUP -> LogData::remoteAddress;
-            case NginxLogLineParser.USER_GROUP -> LogData::remoteUser;
-            case NginxLogLineParser.METHOD_GROUP -> LogData::requestMethod;
-            case NginxLogLineParser.RESOURCE_GROUP -> LogData::requestResource;
-            case NginxLogLineParser.HTTP_GROUP -> LogData::requestHttpVersion;
-            case NginxLogLineParser.STATUS_GROUP -> it -> String.valueOf(it.status());
-            case NginxLogLineParser.REFERER_GROUP -> LogData::httpReferer;
-            case NginxLogLineParser.USER_AGENT_GROUP -> LogData::httpUserAgent;
-            default -> throw new IllegalArgumentException("Unknown filter field: " + filterField);
-        };
+        compiledFilterMap.forEach((field, value) -> {
+            if (field == null || value == null) {
+                predicateList.add(ignored -> true);
+                return;
+            }
 
-        return it -> filterValueRegex.matcher(method.apply(it)).matches();
+            Function<LogData, String> method = switch (field) {
+                case NginxLogLineParser.REMOTE_ADDRESS_GROUP -> LogData::remoteAddress;
+                case NginxLogLineParser.USER_GROUP -> LogData::remoteUser;
+                case NginxLogLineParser.METHOD_GROUP -> LogData::requestMethod;
+                case NginxLogLineParser.RESOURCE_GROUP -> LogData::requestResource;
+                case NginxLogLineParser.HTTP_GROUP -> LogData::requestHttpVersion;
+                case NginxLogLineParser.STATUS_GROUP -> it -> String.valueOf(it.status());
+                case NginxLogLineParser.REFERER_GROUP -> LogData::httpReferer;
+                case NginxLogLineParser.USER_AGENT_GROUP -> LogData::httpUserAgent;
+                default -> throw new IllegalArgumentException("Unknown filter field: " + field);
+            };
+
+            predicateList.add(it -> value.matcher(method.apply(it)).matches());
+        });
+
+        return predicateList.stream().reduce(Predicate::and).orElse(ignored -> true);
     }
 }
 

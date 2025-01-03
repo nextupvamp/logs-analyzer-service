@@ -7,16 +7,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-public class Resource {
+public class FieldValueFilter {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private int id;
 
-    @Enumerated(EnumType.STRING)
-    private ResourceType type;
+    @Column(nullable = false)
+    private String field;
 
-    private String path;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    private ResourceFilters filters;
+    @Column(nullable = false)
+    private String value;
 }

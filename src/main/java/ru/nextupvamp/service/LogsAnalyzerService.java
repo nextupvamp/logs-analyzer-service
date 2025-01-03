@@ -1,10 +1,5 @@
 package ru.nextupvamp.service;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,10 +7,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.nextupvamp.model.data.Filters;
 import ru.nextupvamp.model.data.LogsStatistics;
+import ru.nextupvamp.model.entities.FieldValueFilter;
 import ru.nextupvamp.model.entities.Resource;
+import ru.nextupvamp.model.entities.ResourceFilters;
 import ru.nextupvamp.model.entities.ResourceType;
 import ru.nextupvamp.model.handlers.LogsStatisticsGatherer;
 import ru.nextupvamp.repository.ResourceRepository;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -36,27 +43,41 @@ public class LogsAnalyzerService {
     private LogsStatistics getStatisticsFromFile(Resource resource) {
         var file = Path.of(resource.path());
 
-        Filters filters = resource.filters();
-        if (filters == null) {
-            filters = Filters.EMPTY;
-        }
+        var resourceFilters = resource.filters();
+        Filters filters = mapResourceFiltersToFilters(resourceFilters);
 
-        var statistics =  logsStatisticsGatherer.gatherStatisticsFromFile(file, filters);
-        resourceRepository.delete(resource);
-        return statistics;
+        return logsStatisticsGatherer.gatherStatisticsFromFile(file, filters);
     }
 
     private LogsStatistics getStatisticsFromUri(Resource resource) {
         var uri = URI.create(resource.path());
 
-        Filters filters = resource.filters();
-        if (filters == null) {
-            filters = Filters.EMPTY;
+        var resourceFilters = resource.filters();
+        Filters filters = mapResourceFiltersToFilters(resourceFilters);
+
+        return logsStatisticsGatherer.gatherStatisticsFromUri(uri, filters);
+    }
+
+    private Filters mapResourceFiltersToFilters(ResourceFilters resourceFilters) {
+        if (resourceFilters == null) {
+            return Filters.EMPTY;
+        }
+        ZonedDateTime fromDate = resourceFilters.fromDate();
+        ZonedDateTime toDate = resourceFilters.toDate();
+        Map<String, String> filterMap = null;
+
+        if (resourceFilters.fieldValueFilters() != null && !resourceFilters.fieldValueFilters().isEmpty()) {
+            filterMap = new HashMap<>();
+            for (var filter : resourceFilters.fieldValueFilters()) {
+                filterMap.put(filter.field(), filter.value());
+            }
         }
 
-        var statistics = logsStatisticsGatherer.gatherStatisticsFromUri(uri, filters);
-        resourceRepository.delete(resource);
-        return statistics;
+        return Filters.builder()
+                .fromDate(fromDate)
+                .toDate(toDate)
+                .filterMap(filterMap)
+                .build();
     }
 
     @SneakyThrows
@@ -80,9 +101,29 @@ public class LogsAnalyzerService {
 
     public int uploadFilters(int id, Filters filters) {
         validateFilters(filters);
+
         var resource = resourceRepository.findById(id).orElseThrow();
-        resource.filters(filters);
+
+        ZonedDateTime fromDate = filters.fromDate();
+        ZonedDateTime toDate = filters.toDate();
+        Map<String, String> filterMap = filters.filterMap();
+
+        List<FieldValueFilter> fieldValueFilters = new ArrayList<>();
+        filterMap.forEach((field, value) -> {
+            var fieldValueFilter = new FieldValueFilter();
+            fieldValueFilter.field(field);
+            fieldValueFilter.value(value);
+            fieldValueFilters.add(fieldValueFilter);
+        });
+
+        var resourceFilters = new ResourceFilters();
+        resourceFilters.fromDate(fromDate);
+        resourceFilters.toDate(toDate);
+        resourceFilters.fieldValueFilters(fieldValueFilters);
+
+        resource.filters(resourceFilters);
         resourceRepository.save(resource);
+
         return id;
     }
 
@@ -91,20 +132,21 @@ public class LogsAnalyzerService {
             throw new IllegalArgumentException("Filters is null");
         }
 
-        ZonedDateTime from = filters.fromTime();
-        ZonedDateTime to = filters.toTime();
-        String filterField = filters.filterField();
-        String filterValueRegex = filters.filterValueRegex();
+        ZonedDateTime from = filters.fromDate();
+        ZonedDateTime to = filters.toDate();
+        Map<String, String> filterMap = filters.filterMap();
 
-        if (from.isAfter(to)) {
+        if (from != null && to != null && from.isAfter(to)) {
             throw new IllegalArgumentException("From time must not be after to time");
         }
-        if (filterField == null && filterValueRegex != null) {
-            throw new IllegalArgumentException("Missing filter field");
-        }
-        if (filterField != null && filterValueRegex == null) {
-            throw new IllegalArgumentException("Missing filter value regex");
-        }
+        filterMap.forEach((field, value) -> {
+            if (field == null && value != null) {
+                throw new IllegalArgumentException("Missing filter field for value " + value);
+            }
+            if (field != null && value == null) {
+                throw new IllegalArgumentException("Missing filter value regex for field " + field);
+            }
+        });
     }
 
     private String getFreeName() {

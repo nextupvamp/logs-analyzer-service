@@ -1,14 +1,15 @@
 package ru.nextupvamp.model.data;
 
-import java.time.ZonedDateTime;
 import lombok.Builder;
+
+import java.time.ZonedDateTime;
+import java.util.Map;
 
 @Builder
 public record Filters(
-    ZonedDateTime fromTime,
-    ZonedDateTime toTime,
-    String filterField,
-    String filterValueRegex
+        ZonedDateTime fromDate,
+        ZonedDateTime toDate,
+        Map<String, String> filterMap // filter field : filter value regex
 ) {
     public static final Filters EMPTY = Filters.builder().build();
 }
