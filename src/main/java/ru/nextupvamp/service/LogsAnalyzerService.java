@@ -15,6 +15,7 @@ import ru.nextupvamp.model.handlers.LogsStatisticsGatherer;
 import ru.nextupvamp.repository.ResourceRepository;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,12 +84,25 @@ public class LogsAnalyzerService {
     @SneakyThrows
     public int uploadFile(MultipartFile file) {
         String path = getFreeName();
-        file.transferTo(new File(path));
+        File actualFile = new File(path);
+        try (FileOutputStream fos = new FileOutputStream(actualFile)) {
+            fos.write(file.getBytes());
+        }
+
         var resource = new Resource();
         resource.type(ResourceType.FILE);
         resource.path(path);
         resourceRepository.save(resource);
         return resource.id();
+    }
+
+    private String getFreeName() {
+        String fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + ".txt";
+        int i = 0;
+        while (Files.exists(Path.of(fileName))) {
+            fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + (++i) + ".txt";
+        }
+        return fileName;
     }
 
     public int uploadUrl(String url) {
