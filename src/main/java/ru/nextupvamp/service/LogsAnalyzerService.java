@@ -92,6 +92,14 @@ public class LogsAnalyzerService {
     }
 
     public int uploadUrl(String url) {
+        try {
+            URI.create(url);
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("URL is null");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid URL Format");
+        }
+
         var resource = new Resource();
         resource.type(ResourceType.URL);
         resource.path(url);
