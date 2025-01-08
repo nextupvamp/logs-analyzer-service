@@ -1,6 +1,8 @@
 package ru.nextupvamp.model.handlers;
 
+import lombok.SneakyThrows;
 import ru.nextupvamp.model.data.LogData;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -12,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
 
 public class LogsStreamReader implements AutoCloseable {
     private InputStream inputStream;
@@ -31,8 +32,8 @@ public class LogsStreamReader implements AutoCloseable {
     @SneakyThrows
     public Stream<LogData> readFromUriAsStream(URI uri, LogLineParser parser) {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(uri)
-            .build();
+                .uri(uri)
+                .build();
         inputStream = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream()).body();
         initReaders(inputStream);
 

@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.1</version>
-        <relativePath/> <!-- lookup parent fromTime repository -->
+        <relativePath/> <!-- lookup parent fromDate repository -->
     </parent>
     <groupId>ru.nextupvamp</groupId>
     <artifactId>pstbn</artifactId>

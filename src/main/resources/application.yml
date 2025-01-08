@@ -8,5 +8,5 @@ spring:
       ddl-auto: create
     show-sql: true
 file:
-  user-file-directory: "a"
+  user-file-directory: ""
 

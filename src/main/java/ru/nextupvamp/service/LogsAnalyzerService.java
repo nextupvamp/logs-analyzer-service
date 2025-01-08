@@ -1,5 +1,6 @@
 package ru.nextupvamp.service;
 
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,9 +86,8 @@ public class LogsAnalyzerService {
     public int uploadFile(MultipartFile file) {
         String path = getFreeName();
         File actualFile = new File(path);
-        try (FileOutputStream fos = new FileOutputStream(actualFile)) {
-            fos.write(file.getBytes());
-        }
+        @Cleanup FileOutputStream fos = new FileOutputStream(actualFile);
+        fos.write(file.getBytes());
 
         var resource = new Resource();
         resource.type(ResourceType.FILE);
@@ -105,6 +105,7 @@ public class LogsAnalyzerService {
         return fileName;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public int uploadUrl(String url) {
         try {
             URI.create(url);

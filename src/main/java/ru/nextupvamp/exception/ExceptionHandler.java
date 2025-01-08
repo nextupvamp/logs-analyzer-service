@@ -1,11 +1,12 @@
 package ru.nextupvamp.exception;
 
-import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class ExceptionHandler {
