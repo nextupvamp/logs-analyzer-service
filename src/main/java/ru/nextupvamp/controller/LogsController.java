@@ -1,7 +1,5 @@
 package ru.nextupvamp.controller;
 
-import java.util.HashMap;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.nextupvamp.model.data.Filters;
 import ru.nextupvamp.model.data.LogsStatistics;
 import ru.nextupvamp.service.LogsAnalyzerService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -39,5 +40,11 @@ public class LogsController {
     @GetMapping("/statistics/{id}")
     public LogsStatistics getStatistics(@PathVariable int id) {
         return service.getStatistics(id);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteResource(@PathVariable int id) {
+        service.deleteResource(id);
+        return ResponseEntity.ok().build();
     }
 }

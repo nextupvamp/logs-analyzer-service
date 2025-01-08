@@ -171,12 +171,12 @@ public class LogsAnalyzerService {
         });
     }
 
-    private String getFreeName() {
-        String fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + ".txt";
-        int i = 0;
-        while (Files.exists(Path.of(fileName))) {
-            fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + (++i) + ".txt";
+    @SneakyThrows
+    public void deleteResource(int id) {
+        var resource = resourceRepository.findById(id).orElseThrow();
+        if (resource.type() == ResourceType.FILE) {
+            Files.delete(Path.of(resource.path()));
         }
-        return fileName;
+        resourceRepository.delete(resource);
     }
 }
