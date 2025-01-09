@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.nextupvamp.model.data.Filters;
 import ru.nextupvamp.model.data.LogsStatistics;
-import ru.nextupvamp.model.entities.FieldValueFilter;
 import ru.nextupvamp.model.entities.Resource;
 import ru.nextupvamp.model.entities.ResourceFilters;
 import ru.nextupvamp.model.entities.ResourceType;
@@ -21,9 +20,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -64,27 +60,17 @@ public class LogsAnalyzerService {
         if (resourceFilters == null) {
             return Filters.EMPTY;
         }
-        ZonedDateTime fromDate = resourceFilters.fromDate();
-        ZonedDateTime toDate = resourceFilters.toDate();
-        Map<String, String> filterMap = null;
-
-        if (resourceFilters.fieldValueFilters() != null && !resourceFilters.fieldValueFilters().isEmpty()) {
-            filterMap = new HashMap<>();
-            for (var filter : resourceFilters.fieldValueFilters()) {
-                filterMap.put(filter.field(), filter.value());
-            }
-        }
 
         return Filters.builder()
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .filterMap(filterMap)
+                .fromDate(resourceFilters.fromDate())
+                .toDate(resourceFilters.toDate())
+                .filterMap(resourceFilters.filterMap())
                 .build();
     }
 
     @SneakyThrows
     public int uploadFile(MultipartFile file) {
-        String path = getFreeName();
+        String path = getFreeFileName();
         File actualFile = new File(path);
         @Cleanup FileOutputStream fos = new FileOutputStream(actualFile);
         fos.write(file.getBytes());
@@ -96,7 +82,7 @@ public class LogsAnalyzerService {
         return resource.id();
     }
 
-    private String getFreeName() {
+    private String getFreeFileName() {
         String fileName = userFilesDirectory + "logs" + System.currentTimeMillis() + ".txt";
         int i = 0;
         while (Files.exists(Path.of(fileName))) {
@@ -127,22 +113,10 @@ public class LogsAnalyzerService {
 
         var resource = resourceRepository.findById(id).orElseThrow();
 
-        ZonedDateTime fromDate = filters.fromDate();
-        ZonedDateTime toDate = filters.toDate();
-        Map<String, String> filterMap = filters.filterMap();
-
-        List<FieldValueFilter> fieldValueFilters = new ArrayList<>();
-        filterMap.forEach((field, value) -> {
-            var fieldValueFilter = new FieldValueFilter();
-            fieldValueFilter.field(field);
-            fieldValueFilter.value(value);
-            fieldValueFilters.add(fieldValueFilter);
-        });
-
         var resourceFilters = new ResourceFilters();
-        resourceFilters.fromDate(fromDate);
-        resourceFilters.toDate(toDate);
-        resourceFilters.fieldValueFilters(fieldValueFilters);
+        resourceFilters.fromDate(filters.fromDate());
+        resourceFilters.toDate(filters.toDate());
+        resourceFilters.filterMap(filters.filterMap());
 
         resource.filters(resourceFilters);
         resourceRepository.save(resource);

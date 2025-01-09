@@ -121,6 +121,12 @@ public class NginxLogsStatisticsGathererTest {
         Map<String, String> filterMap = new HashMap<>();
         filterMap.put("status", "30.*");
 
+        Filters filters = Filters.builder()
+                .filterMap(filterMap)
+                .build();
+        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+
+        assertEquals(16, logsStatistics.requestsAmount());
     }
 
     @Test

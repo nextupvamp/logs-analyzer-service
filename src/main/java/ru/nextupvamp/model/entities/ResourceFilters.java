@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Map;
 
 @Entity
 @Data
@@ -19,7 +19,9 @@ public class ResourceFilters {
 
     private ZonedDateTime toDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "filter_id")
-    private List<FieldValueFilter> fieldValueFilters;
+    @ElementCollection
+    @CollectionTable(name = "filter_map", joinColumns = {@JoinColumn(name = "filters_id")})
+    @MapKeyColumn(name = "field")
+    @Column(name = "value")
+    private Map<String, String> filterMap;
 }
