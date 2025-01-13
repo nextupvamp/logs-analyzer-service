@@ -12,8 +12,13 @@ import java.util.Map;
 @NoArgsConstructor
 public class ResourceFilters {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(
+            name = "resource_filters_id_gen",
+            sequenceName = "resource_filters_id_gen",
+            allocationSize = 1
+    )
+    private Integer id;
 
     private ZonedDateTime fromDate;
 
