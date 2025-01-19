@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -46,8 +47,8 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         }
     }
 
-    private LogsStatistics gatherData(Stream<LogData> logDataStream, Filters filters) {
-        List<Long> bytesSent = new ArrayList<>();
+    private Statistics gatherData(Stream<LogData> logDataStream, ResourceFilters filters) {
+        Queue<Long> bytesSent = new ConcurrentLinkedQueue<>();
         Map<String, Integer> remoteAddresses = new ConcurrentHashMap<>();
         Map<String, Integer> remoteUsers = new ConcurrentHashMap<>();
         Map<String, Integer> requestMethods = new ConcurrentHashMap<>();
@@ -106,7 +107,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         return statistics;
     }
 
-    long countAverageBytesSent(List<Long> bytesSent) {
+    long countAverageBytesSent(Queue<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
@@ -114,13 +115,15 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         return bytesSent.stream().reduce(0L, Long::sum) / bytesSent.size();
     }
 
-    long count95pBytesSent(List<Long> bytesSent) {
+    long count95pBytesSent(Queue<Long> bytesSent) {
         if (bytesSent.isEmpty()) {
             return 0;
         }
-        bytesSent.sort(Long::compareTo);
 
-        return bytesSent.get((int) (bytesSent.size() * THE_95_TH_PERCENTILE));
+        List<Long> converted = new ArrayList<>(bytesSent);
+        converted.sort(Long::compareTo);
+
+        return converted.get((int) (bytesSent.size() * THE_95_TH_PERCENTILE));
     }
 
     private FilterPredicates initPredicates(

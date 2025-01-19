@@ -2,8 +2,8 @@ package ru.nextupvamp.model.handlers;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import ru.nextupvamp.model.data.Filters;
-import ru.nextupvamp.model.data.LogsStatistics;
+import ru.nextupvamp.model.entities.ResourceFilters;
+import ru.nextupvamp.model.entities.Statistics;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -13,9 +13,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -40,11 +41,10 @@ public class NginxLogsStatisticsGathererTest {
     public void testFromToDate() {
         ZonedDateTime fromDate = ZonedDateTime.parse("2015-05-17T08:05:00Z");
         ZonedDateTime toDate = ZonedDateTime.parse("2015-05-17T08:05:30Z");
-        Filters filters = Filters.builder()
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .build();
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+        ResourceFilters filters = new ResourceFilters();
+        filters.fromDate(fromDate).toDate(toDate);
+
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
             assertTrue(!zdt.isBefore(fromDate) && !zdt.isAfter(toDate));
@@ -54,10 +54,10 @@ public class NginxLogsStatisticsGathererTest {
     @Test
     public void testFromDate() {
         ZonedDateTime fromDate = ZonedDateTime.parse("2015-05-17T08:05:00Z");
-        Filters filters = Filters.builder()
-                .fromDate(fromDate)
-                .build();
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+        ResourceFilters filters = new ResourceFilters();
+        filters.fromDate(fromDate);
+
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
             assertFalse(zdt.isBefore(fromDate));
@@ -67,10 +67,9 @@ public class NginxLogsStatisticsGathererTest {
     @Test
     public void testToDate() {
         ZonedDateTime toDate = ZonedDateTime.parse("2015-05-17T08:05:30Z");
-        Filters filters = Filters.builder()
-                .toDate(toDate)
-                .build();
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+        ResourceFilters filters = new ResourceFilters();
+        filters.toDate(toDate);
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
 
         for (ZonedDateTime zdt : logsStatistics.requestsOnDate().keySet()) {
             assertFalse(zdt.isAfter(toDate));
@@ -84,14 +83,14 @@ public class NginxLogsStatisticsGathererTest {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
         long lines = bufferedReader.lines().count();
 
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, Filters.EMPTY);
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, null);
 
         assertEquals(lines, logsStatistics.requestsAmount());
     }
 
     @Test
     public void testCompute95p() {
-        List<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().collect(Collectors.toList());
+        Queue<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue<Long>::new));
         long p95 = new NginxLogsStatisticsGatherer(PARSER).count95pBytesSent(list);
 
         assertEquals(96, p95);
@@ -99,14 +98,14 @@ public class NginxLogsStatisticsGathererTest {
 
     @Test
     public void testComputeAverage() {
-        List<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().toList();
+        Queue<Long> list = LongStream.iterate(1, it -> it + 1).limit(100).boxed().collect(Collectors.toCollection(ConcurrentLinkedQueue<Long>::new));
 
         assertEquals(50, new NginxLogsStatisticsGatherer(PARSER).countAverageBytesSent(list));
     }
 
     @Test
     public void testCounters() {
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, Filters.EMPTY);
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, null);
 
         assertAll(
                 () -> assertEquals(33, logsStatistics.requestsAmount()), // there are 30 lines in logs1.txt
@@ -120,11 +119,10 @@ public class NginxLogsStatisticsGathererTest {
     public void testFieldValueFilter() {
         Map<String, String> filterMap = new HashMap<>();
         filterMap.put("status", "30.*");
+        ResourceFilters filters = new ResourceFilters();
+        filters.filterMap(filterMap);
 
-        Filters filters = Filters.builder()
-                .filterMap(filterMap)
-                .build();
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
 
         assertEquals(16, logsStatistics.requestsAmount());
     }
@@ -135,10 +133,9 @@ public class NginxLogsStatisticsGathererTest {
         filterMap.put("status", "4.*");
         filterMap.put("method", "GET");
 
-        Filters filters = Filters.builder()
-                .filterMap(filterMap)
-                .build();
-        LogsStatistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
+        ResourceFilters filters = new ResourceFilters();
+        filters.filterMap(filterMap);
+        Statistics logsStatistics = GATHERER.gatherStatisticsFromFile(DATA_SOURCE, filters);
 
         assertEquals(13, logsStatistics.requestsAmount()); // also hand counted
     }
