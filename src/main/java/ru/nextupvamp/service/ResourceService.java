@@ -18,18 +18,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-public class LogsAnalyzerService {
+public class ResourceService {
+    private static final Supplier<NoSuchElementException> NO_RESOURCE_WITH_SUCH_ID =
+            () -> new NoSuchElementException("No Resource With Such ID");
+    private static final Supplier<NoSuchElementException> USER_NOT_FOUND =
+            () -> new NoSuchElementException("User Not Found");
+
     @Value("${file.user-file-directory}")
     private String userFilesDirectory;
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
     private final LogsStatisticsGatherer logsStatisticsGatherer;
 
-    public LogsStatistics getStatistics(int id) {
-        var resource = resourceRepository.findById(id).orElseThrow();
+    public Resource getResource(int id) {
+        return resourceRepository.findById(id).orElseThrow(NO_RESOURCE_WITH_SUCH_ID);
+    }
+
     public Statistics getSavedStatistics(int resourceId) {
         return resourceRepository.findById(resourceId).orElseThrow(NO_RESOURCE_WITH_SUCH_ID).statistics();
     }
@@ -56,13 +65,10 @@ public class LogsAnalyzerService {
         };
     }
 
-    private LogsStatistics getStatisticsFromFile(Resource resource) {
+    private Statistics getStatisticsFromFile(Resource resource) {
         var file = Path.of(resource.path());
-
         var resourceFilters = resource.filters();
-        Filters filters = mapResourceFiltersToFilters(resourceFilters);
-
-        return logsStatisticsGatherer.gatherStatisticsFromFile(file, filters);
+        return logsStatisticsGatherer.gatherStatisticsFromFile(file, resourceFilters);
     }
 
     private Statistics getStatisticsFromUri(Resource resource) {
@@ -125,9 +131,6 @@ public class LogsAnalyzerService {
         var resource = resourceRepository.findById(id).orElseThrow(NO_RESOURCE_WITH_SUCH_ID);
 
         var resourceFilters = new ResourceFilters();
-        resourceFilters.fromDate(filters.fromDate());
-        resourceFilters.toDate(filters.toDate());
-        resourceFilters.filterMap(filters.filterMap());
         resourceFilters.fromDate(filters.fromDate())
                 .toDate(filters.toDate())
                 .filterMap(filters.filterMap());
