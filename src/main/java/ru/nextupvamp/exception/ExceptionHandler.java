@@ -25,9 +25,9 @@ public class ExceptionHandler {
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<?> handleNoSuchElementException() {
+    public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        problemDetail.setTitle("No Resource With Such ID");
+        problemDetail.setTitle(exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problemDetail);
     }
 }
