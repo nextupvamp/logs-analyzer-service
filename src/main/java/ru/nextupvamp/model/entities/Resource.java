@@ -1,12 +1,16 @@
 package ru.nextupvamp.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
+@Getter(onMethod = @__(@JsonProperty))
 public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -17,6 +21,10 @@ public class Resource {
     )
     private Integer id;
 
+    @ManyToOne
+    @JsonBackReference
+    private User user;
+
     @Enumerated(EnumType.STRING)
     private ResourceType type;
 
@@ -24,4 +32,7 @@ public class Resource {
 
     @OneToOne(cascade = CascadeType.ALL)
     private ResourceFilters filters;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Statistics statistics;
 }

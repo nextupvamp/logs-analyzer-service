@@ -1,13 +1,13 @@
 package ru.nextupvamp.model.handlers;
 
-import ru.nextupvamp.model.data.Filters;
-import ru.nextupvamp.model.data.LogsStatistics;
+import ru.nextupvamp.model.entities.ResourceFilters;
+import ru.nextupvamp.model.entities.Statistics;
 
 import java.net.URI;
 import java.nio.file.Path;
 
 public interface LogsStatisticsGatherer {
-    LogsStatistics gatherStatisticsFromFile(Path file, Filters filters);
+    Statistics gatherStatisticsFromFile(Path file, ResourceFilters filters);
 
-    LogsStatistics gatherStatisticsFromUri(URI uri, Filters filters);
+    Statistics gatherStatisticsFromUri(URI uri, ResourceFilters filters);
 }

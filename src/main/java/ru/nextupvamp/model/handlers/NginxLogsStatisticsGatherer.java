@@ -3,9 +3,9 @@ package ru.nextupvamp.model.handlers;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
-import ru.nextupvamp.model.data.Filters;
 import ru.nextupvamp.model.data.LogData;
-import ru.nextupvamp.model.data.LogsStatistics;
+import ru.nextupvamp.model.entities.ResourceFilters;
+import ru.nextupvamp.model.entities.Statistics;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -27,7 +27,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
     private final LogLineParser logsHandler;
 
     @SneakyThrows
-    public LogsStatistics gatherStatisticsFromFile(Path file, Filters filters) {
+    public Statistics gatherStatisticsFromFile(Path file, ResourceFilters filters) {
         if (file == null || Files.notExists(file)) {
             throw new IllegalArgumentException("File does not exist");
         }
@@ -37,7 +37,7 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
     }
 
     @SneakyThrows
-    public LogsStatistics gatherStatisticsFromUri(URI uri, Filters filters) {
+    public Statistics gatherStatisticsFromUri(URI uri, ResourceFilters filters) {
         if (uri == null) {
             throw new IllegalArgumentException("URI is null");
         }
@@ -57,7 +57,12 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
         AtomicInteger ignoredRows = new AtomicInteger(0);
         Map<ZonedDateTime, Integer> requestsOnDate = new ConcurrentHashMap<>();
 
-        FilterPredicates filterPredicates = initPredicates(filters.fromDate(), filters.toDate(), filters.filterMap());
+        FilterPredicates filterPredicates;
+        if (filters != null) { // to avoid npe
+            filterPredicates = initPredicates(filters.fromDate(), filters.toDate(), filters.filterMap());
+        } else {
+            filterPredicates = initPredicates(null, null, null);
+        }
         Predicate<LogData> dateTimePredicate = filterPredicates.dateTimePredicate();
         Predicate<LogData> fieldFilterPredicate = filterPredicates.fieldFilterPredicate();
 
@@ -79,20 +84,26 @@ public class NginxLogsStatisticsGatherer implements LogsStatisticsGatherer {
                     }
                 });
 
-        return LogsStatistics.builder()
-                .ignoredRows(ignoredRows.get())
+        Statistics statistics = new Statistics();
+        ZonedDateTime from = null;
+        ZonedDateTime to = null;
+        if (filters != null) {
+            from = filters.fromDate();
+            to = filters.toDate();
+        }
+        statistics.ignoredRows(ignoredRows.get())
                 .remoteAddresses(remoteAddresses)
                 .remoteUsers(remoteUsers)
-                .from(filters.fromDate())
-                .to(filters.toDate())
+                .fromDate(from)
+                .toDate(to)
                 .requestsOnDate(requestsOnDate)
                 .requestMethods(requestMethods)
                 .requestResources(requestResources)
                 .statuses(statuses)
                 .requestsAmount(requestsAmount.get())
-                .averageBytesSent(countAverageBytesSent(bytesSent))
-                .p95BytesSent(count95pBytesSent(bytesSent))
-                .build();
+                .averageBytesSent(countAverageBytesSent((bytesSent)))
+                .p95BytesSent(count95pBytesSent(bytesSent));
+        return statistics;
     }
 
     long countAverageBytesSent(List<Long> bytesSent) {

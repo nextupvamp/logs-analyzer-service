@@ -28,5 +28,5 @@ public class ResourceFilters {
     @CollectionTable(name = "filter_map", joinColumns = {@JoinColumn(name = "filters_id")})
     @MapKeyColumn(name = "field")
     @Column(name = "value")
-    private Map<String, String> filterMap;
+    private Map<String, String> filterMap; // filter field : filter value regex
 }
