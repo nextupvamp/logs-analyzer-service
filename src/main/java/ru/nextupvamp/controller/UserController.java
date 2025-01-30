@@ -1,5 +1,6 @@
 package ru.nextupvamp.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -21,7 +22,7 @@ public class UserController {
     // unfortunately there's no safety for user data
 
     @PostMapping
-    public ResponseEntity<?> addNewUser(@RequestBody User user) {
+    public ResponseEntity<?> addNewUser(@Valid @RequestBody User user) {
         Optional<User> addedUser = userService.addNewUser(user);
         if (addedUser.isEmpty()) {
             ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
@@ -32,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping("{login}")
-    public User getUserDataById(@PathVariable String login) {
+    public User getUserData(@PathVariable String login) {
         return userService.getUserByLogin(login);
     }
 

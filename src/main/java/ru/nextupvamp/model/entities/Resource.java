@@ -22,6 +22,7 @@ public class Resource {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "user_login")
     @JsonBackReference
     private User user;
 

@@ -1,5 +1,6 @@
 package ru.nextupvamp.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,13 +18,13 @@ public class ResourceController {
 
     @PostMapping("upload_file")
     public IdResponse uploadFile(@RequestPart("file") MultipartFile file,
-                                 @RequestPart(name = "user", required = false) User user) {
+                                 @Valid @RequestPart(name = "user", required = false) User user) {
         return new IdResponse(resourceService.uploadFile(file, user));
     }
 
     @PostMapping("upload_url")
     public IdResponse uploadUrl(@RequestPart("url") UrlRequest url,
-                                @RequestPart(name = "user", required = false) User user) {
+                                @Valid @RequestPart(name = "user", required = false) User user) {
         return new IdResponse(resourceService.uploadUrl(url.url(), user));
     }
 
