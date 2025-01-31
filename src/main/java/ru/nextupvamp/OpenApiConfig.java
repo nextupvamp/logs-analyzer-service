@@ -9,7 +9,8 @@ import io.swagger.v3.oas.annotations.info.Info;
                 title = "Logs analyzer API",
                 version = "dev",
                 contact = @Contact(
-                        name = "Vladislav Kulikov"
+                        name = "Vladislav Kulikov",
+                        url = "https://github.com/nextupvamp"
                 )
         )
 )
