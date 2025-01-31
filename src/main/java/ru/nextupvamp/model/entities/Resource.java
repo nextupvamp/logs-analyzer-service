@@ -32,8 +32,10 @@ public class Resource {
     private String path;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "filters_id")
     private ResourceFilters filters;
 
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "statistics_id")
     private Statistics statistics;
 }
