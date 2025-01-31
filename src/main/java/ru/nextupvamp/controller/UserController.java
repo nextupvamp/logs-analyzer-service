@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.nextupvamp.model.data.UserDto;
 import ru.nextupvamp.model.entities.Resource;
 import ru.nextupvamp.model.entities.User;
 import ru.nextupvamp.service.UserService;
@@ -23,6 +24,8 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> addNewUser(@Valid @RequestBody User user) {
+    @PostMapping("new")
+    public ResponseEntity<?> addNewUser(@Valid @RequestBody UserDto user) {
         Optional<User> addedUser = userService.addNewUser(user);
         if (addedUser.isEmpty()) {
             ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
@@ -33,10 +36,17 @@ public class UserController {
     }
 
     @GetMapping("{login}")
-    public User getUserData(@PathVariable String login) {
-        return userService.getUserByLogin(login);
+    public UserDto getUserData(@PathVariable String login) {
+        var foundUser = userService.getUserByLogin(login);
+        return new UserDto(foundUser.login(), foundUser.password());
     }
 
+    @GetMapping
+    public List<UserDto> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    @Operation(summary = "Deleting a user")
     @DeleteMapping("{login}")
     public void deleteUser(@PathVariable String login) {
         userService.deleteUser(login);

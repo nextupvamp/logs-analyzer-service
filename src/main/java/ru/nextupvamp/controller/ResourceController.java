@@ -4,10 +4,10 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.nextupvamp.model.entities.Resource;
+import ru.nextupvamp.model.data.ResourceDto;
+import ru.nextupvamp.model.data.UserDto;
 import ru.nextupvamp.model.entities.ResourceFilters;
 import ru.nextupvamp.model.entities.Statistics;
-import ru.nextupvamp.model.entities.User;
 import ru.nextupvamp.service.ResourceService;
 
 @RestController
@@ -18,13 +18,13 @@ public class ResourceController {
 
     @PostMapping("upload_file")
     public IdResponse uploadFile(@RequestPart("file") MultipartFile file,
-                                 @Valid @RequestPart(name = "user", required = false) User user) {
+                                 @Valid @RequestPart(name = "user", required = false) UserDto user) {
         return new IdResponse(resourceService.uploadFile(file, user));
     }
 
     @PostMapping("upload_url")
     public IdResponse uploadUrl(@RequestPart("url") UrlRequest url,
-                                @Valid @RequestPart(name = "user", required = false) User user) {
+                                @Valid @RequestPart(name = "user", required = false) UserDto user) {
         return new IdResponse(resourceService.uploadUrl(url.url(), user));
     }
 
@@ -34,7 +34,7 @@ public class ResourceController {
     }
 
     @GetMapping("{id}")
-    public Resource getResource(@PathVariable int id) {
+    public ResourceDto getResource(@PathVariable int id) {
         return resourceService.getResource(id);
     }
 

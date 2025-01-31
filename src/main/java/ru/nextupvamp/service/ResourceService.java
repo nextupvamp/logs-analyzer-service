@@ -6,6 +6,8 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.nextupvamp.model.data.ResourceDto;
+import ru.nextupvamp.model.data.UserDto;
 import ru.nextupvamp.model.entities.*;
 import ru.nextupvamp.model.handlers.LogsStatisticsGatherer;
 import ru.nextupvamp.repository.ResourceRepository;
@@ -35,8 +37,13 @@ public class ResourceService {
     private final UserRepository userRepository;
     private final LogsStatisticsGatherer logsStatisticsGatherer;
 
-    public Resource getResource(int id) {
-        return resourceRepository.findById(id).orElseThrow(NO_RESOURCE_WITH_SUCH_ID);
+    public ResourceDto getResource(int id) {
+        var foundResource = resourceRepository.findById(id).orElseThrow(NO_RESOURCE_WITH_SUCH_ID);
+        String userLogin = null;
+        if (foundResource.user() != null) {
+            userLogin = foundResource.user().login();
+        }
+        return new ResourceDto(id, userLogin, foundResource.type(), foundResource.path());
     }
 
     public Statistics getSavedStatistics(int resourceId) {
@@ -78,7 +85,7 @@ public class ResourceService {
     }
 
     @SneakyThrows
-    public int uploadFile(MultipartFile file, User user) {
+    public int uploadFile(MultipartFile file, UserDto user) {
         User persistentUser = null;
         if (user != null && user.login() != null && !user.login().isEmpty()) {
             persistentUser = userRepository.findById(user.login()).orElseThrow(USER_NOT_FOUND);
@@ -105,7 +112,7 @@ public class ResourceService {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public int uploadUrl(String url, User user) {
+    public int uploadUrl(String url, UserDto user) {
         User persistentUser = null;
         if (user != null && user.login() != null && !user.login().isEmpty()) {
             persistentUser = userRepository.findById(user.login()).orElseThrow(USER_NOT_FOUND);

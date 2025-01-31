@@ -2,9 +2,11 @@ package ru.nextupvamp.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.nextupvamp.model.data.UserDto;
 import ru.nextupvamp.model.entities.User;
 import ru.nextupvamp.repository.UserRepository;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -17,7 +19,7 @@ public class UserService {
 
     private UserRepository userRepository;
 
-    public Optional<User> addNewUser(User userData) {
+    public Optional<User> addNewUser(UserDto userData) {
         User user = new User();
         user.login(userData.login());
         user.password(userData.password());
@@ -35,5 +37,9 @@ public class UserService {
     public void deleteUser(String login) {
         User user = userRepository.findById(login).orElseThrow(USER_NOT_FOUND);
         userRepository.delete(user);
+    }
+
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream().map(it -> new UserDto(it.login(), it.password())).toList();
     }
 }
