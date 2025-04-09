@@ -1,4 +1,4 @@
-package ru.nextupvamp.model.data;
+package ru.nextupvamp.dto;
 
 import ru.nextupvamp.model.entities.ResourceType;
 

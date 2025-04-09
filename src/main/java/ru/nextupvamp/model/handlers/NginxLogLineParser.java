@@ -1,7 +1,7 @@
 package ru.nextupvamp.model.handlers;
 
 import org.springframework.stereotype.Component;
-import ru.nextupvamp.model.data.LogData;
+import ru.nextupvamp.dto.LogData;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

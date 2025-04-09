@@ -1,7 +1,7 @@
 package ru.nextupvamp.model.handlers;
 
 import lombok.SneakyThrows;
-import ru.nextupvamp.model.data.LogData;
+import ru.nextupvamp.dto.LogData;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package ru.nextupvamp.model.data;
+package ru.nextupvamp.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

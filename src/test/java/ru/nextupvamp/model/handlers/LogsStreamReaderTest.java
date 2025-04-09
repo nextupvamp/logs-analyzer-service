@@ -2,7 +2,7 @@ package ru.nextupvamp.model.handlers;
 
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import ru.nextupvamp.model.data.LogData;
+import ru.nextupvamp.dto.LogData;
 
 import java.net.URI;
 import java.nio.file.Path;

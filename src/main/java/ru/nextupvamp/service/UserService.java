@@ -2,7 +2,7 @@ package ru.nextupvamp.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.nextupvamp.model.data.UserDto;
+import ru.nextupvamp.dto.UserDto;
 import ru.nextupvamp.model.entities.User;
 import ru.nextupvamp.repository.UserRepository;
 

@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.nextupvamp.model.data.UserDto;
+import ru.nextupvamp.dto.UserDto;
 import ru.nextupvamp.model.entities.Resource;
 import ru.nextupvamp.model.entities.User;
 import ru.nextupvamp.service.UserService;

@@ -3,7 +3,7 @@ package ru.nextupvamp.model.handlers;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
-import ru.nextupvamp.model.data.LogData;
+import ru.nextupvamp.dto.LogData;
 import ru.nextupvamp.model.entities.ResourceFilters;
 import ru.nextupvamp.model.entities.Statistics;
 

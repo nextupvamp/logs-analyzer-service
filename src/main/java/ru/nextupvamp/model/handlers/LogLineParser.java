@@ -1,6 +1,6 @@
 package ru.nextupvamp.model.handlers;
 
-import ru.nextupvamp.model.data.LogData;
+import ru.nextupvamp.dto.LogData;
 
 public interface LogLineParser {
     LogData parseLine(String line);
