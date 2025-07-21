@@ -1,0 +1,343 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: login
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+
+  - changeSet:
+      id: 2
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: resource_filters
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: from_date
+                  type: TIMESTAMP WITH TIME ZONE
+              - column:
+                  name: to_date
+                  type: TIMESTAMP WITH TIME ZONE
+
+  - changeSet:
+      id: 3
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: filter_map
+            columns:
+              - column:
+                  name: filters_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: field
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value
+                  type: VARCHAR(255)
+        - addPrimaryKey:
+            tableName: filter_map
+            columnNames: filters_id, field
+        - addForeignKeyConstraint:
+            baseTableName: filter_map
+            baseColumnNames: filters_id
+            constraintName: fk_filter_map_filters
+            referencedTableName: resource_filters
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 4
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: statistics
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: ignored_rows
+                  type: INT
+              - column:
+                  name: from_date
+                  type: TIMESTAMP WITH TIME ZONE
+              - column:
+                  name: to_date
+                  type: TIMESTAMP WITH TIME ZONE
+              - column:
+                  name: requests_amount
+                  type: INT
+              - column:
+                  name: average_bytes_sent
+                  type: DOUBLE PRECISION
+              - column:
+                  name: p_95_bytes_sent
+                  type: BIGINT
+
+  - changeSet:
+      id: 5
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: resource
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_login
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: filters_id
+                  type: INT
+              - column:
+                  name: statistics_id
+                  type: INT
+        - addForeignKeyConstraint:
+            baseTableName: resource
+            baseColumnNames: user_login
+            constraintName: fk_resource_user
+            referencedTableName: users
+            referencedColumnNames: login
+        - addForeignKeyConstraint:
+            baseTableName: resource
+            baseColumnNames: filters_id
+            constraintName: fk_resource_filters
+            referencedTableName: resource_filters
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            baseTableName: resource
+            baseColumnNames: statistics_id
+            constraintName: fk_resource_statistics
+            referencedTableName: statistics
+            referencedColumnNames: id
+        - addUniqueConstraint:
+            tableName: resource
+            columnNames: filters_id
+            constraintName: uq_resource_filters
+        - addUniqueConstraint:
+            tableName: resource
+            columnNames: statistics_id
+            constraintName: uq_resource_statistics
+
+  - changeSet:
+      id: 6
+      author: nextupvamp
+      changes:
+        - addColumn:
+            tableName: statistics
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+                    unique: true
+        - addForeignKeyConstraint:
+            baseTableName: statistics
+            baseColumnNames: resource_id
+            constraintName: fk_statistics_resource
+            referencedTableName: resource
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 7
+      author: nextupvamp
+      changes:
+        - createTable:
+            tableName: remote_address
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: remote_address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: remote_address
+            columnNames: resource_id, remote_address
+        - addForeignKeyConstraint:
+            baseTableName: remote_address
+            baseColumnNames: resource_id
+            constraintName: fk_remote_address_resource
+            referencedTableName: statistics
+            referencedColumnNames: id
+
+        - createTable:
+            tableName: remote_user
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: remote_user
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: remote_user
+            columnNames: resource_id, remote_user
+        - addForeignKeyConstraint:
+            baseTableName: remote_user
+            baseColumnNames: resource_id
+            constraintName: fk_remote_user_resource
+            referencedTableName: statistics
+            referencedColumnNames: id
+
+        - createTable:
+            tableName: requests_on_date
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: requests_on_date
+            columnNames: resource_id, date
+        - addForeignKeyConstraint:
+            baseTableName: requests_on_date
+            baseColumnNames: resource_id
+            constraintName: fk_requests_date_resource
+            referencedTableName: statistics
+            referencedColumnNames: id
+
+        - createTable:
+            tableName: request_method
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: method
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: request_method
+            columnNames: resource_id, method
+        - addForeignKeyConstraint:
+            baseTableName: request_method
+            baseColumnNames: resource_id
+            constraintName: fk_request_method_resource
+            referencedTableName: statistics
+            referencedColumnNames: id
+
+        - createTable:
+            tableName: request_resources
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: request_resource
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: request_resources
+            columnNames: resource_id, request_resource
+        - addForeignKeyConstraint:
+            baseTableName: request_resources
+            baseColumnNames: resource_id
+            constraintName: fk_request_resources_resource
+            referencedTableName: statistics
+            referencedColumnNames: id
+
+        - createTable:
+            tableName: statuses
+            columns:
+              - column:
+                  name: resource_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: INT
+        - addPrimaryKey:
+            tableName: statuses
+            columnNames: resource_id, status
+        - addForeignKeyConstraint:
+            baseTableName: statuses
+            baseColumnNames: resource_id
+            constraintName: fk_statuses_resource
+            referencedTableName: statistics
+            referencedColumnNames: id

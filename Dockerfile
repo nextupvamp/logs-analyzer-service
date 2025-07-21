@@ -1,4 +1,4 @@
-FROM openjdk:23-jdk
+FROM openjdk:21-jdk
 LABEL authors="Vladislav"
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
